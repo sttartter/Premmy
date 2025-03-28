@@ -2204,6 +2204,7 @@ pLyze = macro(300, "Paralyze", function()
     end
 end)
 pLyze = addIcon("paralyzerune", {item=3165, text="LYZE"}, pLyze)
+UI.Separator()
 -------
 
 macro(400, "Exevo Gran Mas Frigo", function()

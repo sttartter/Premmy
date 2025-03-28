@@ -2523,7 +2523,54 @@ clickDoor = macro(1000, "OPEN DOORS", function()
     end
 end)
 UI.Separator()
+setDefaultTab("SIO")
+UI.Separator()
+macro(500, "GRAN + RES", function()
+    if g_game.isAttacking() then
+        say("exura gran mas res")
+        say("exura gran mas res")
+        say("exura gran mas res")
+        delay(500)
+    end
+end)
 
+UI.Separator()
+macro(500, "Exura Sio - 80%", function()
+    local friend = getPlayerByName(storage.friendName)
+    local friend1 = getPlayerByName(storage.friend1Name)
+    if friend and friend:getHealthPercent() < 80 then
+        say("exura sio \""..storage.friendName)
+        delay(500)
+   elseif friend1 and friend1:getHealthPercent() <= 80 then -- If u need more you can copy this lines
+        say("exura sio \""..storage.friend1Name) --
+        delay(500) --
+    end -- And paste them between this end and the delay
+end)
+UI.Label("Friend I")
+  addTextEdit("friendName", storage.friendName or "Friend Name", function(widget, text) 
+    storage.friendName = text
+end)
+UI.Label("Friend II")
+  addTextEdit("friend1Name", storage.friend1Name or "Friend Name", function(widget, text) 
+    storage.friend1Name = text -- If u add more just rename the Friend1Name to Friend2Name in the lines u paste
+end) 
+
+
+UI.Separator()
+shPt = macro(400, "Sio Party - 70%",function()
+  if g_game.isOnline() then
+    local p = g_game.getLocalPlayer()
+    if p:getHealth()/p:getMaxHealth() > 0.5 then
+        for i,v in pairs(g_map.getSpectators(p:getPosition())) do 
+            if v:getId() ~= p:getId() and v:getHealthPercent() <= 70 and ((v:getShield() >= 3 and v:getShield() ~= 11) or v:getEmblem() == 1) then 
+                say('exura sio "' .. v:getName())
+            end      
+        end    
+    end 
+  end 
+end)
+shPt.switch:setColor("#ffaa00")
+shPt.switch:setHeight(33)
 ----------------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------------
 --

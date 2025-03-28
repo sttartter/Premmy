@@ -649,25 +649,17 @@ UI.Label("-FAST HEAL SYSTEM-"):setColor("green")
 UI.Separator()
 
 
-local healingSpell = 'Exura Gran San'
+local healingSpell = 'Exura Vita'
 local hpPercent = 95
-macro(270, "FAST GRAN SAN 95% - RP",  function()
+macro(270, "FAST EXURA VITA 95% - ED",  function()
   if (hppercent() <= hpPercent) then
     say(healingSpell) 
   end
 end)
-
-local hpId = 23374
-local hpPercent = 90
-macro(200, "FAST SPIRIT 90% - RP",  function()
-  if (hppercent() <= hpPercent) then
-    usewith(hpId, player) 
-  end
-end)
   
-local manaId = 238
-local manaPercent = 65
-macro(360, "FAST MANA 65% - RP",  function()
+local manaId = 23373
+local manaPercent = 70
+macro(360, "FAST MANA 70% - ED",  function()
   if (manapercent() <= manaPercent) then
     usewith(manaId, player) 
   end

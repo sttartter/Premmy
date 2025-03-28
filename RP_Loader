@@ -2468,12 +2468,6 @@ UI.Separator()
 local dance = macro(100, "Dance Ccc", function()
     turn(math.random(0,3))
 end)
-
-local miMacro = macro(100, "Dance Ddd", function()
-    local randomTurn = math.random(1, 2) == 1 and 1 or 3
-    turn(randomTurn)
-end)
-local miIcono = addIcon('idIcono', {item=35909, text = "<TURN>"}, miMacro)
 ----------------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------------
 --

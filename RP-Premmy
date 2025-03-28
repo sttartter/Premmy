@@ -2388,6 +2388,147 @@ gamePanel.onMouseWheel = function(widget, mousePos, scroll)
   end
 end
 --
+--- TRAVEL este script se debe asegurar verificando las sintaxis, osea a veces si al hacer custom si da error lo que tienes que hacer es ir al script original en el discor, copiarlo y finalmente pegarlo y posteriormente agregarle las citys nuevas
+
+local NPCsAndCities = {
+  ["Captain Bluebear"] = "Ab'Dendriel, Arcadia, Carlin, Edron, Krailos, Liberty Bay, Oramond, Port Hope,  Rangiroa, Roshamuul, Svargrond, Venore, Yalahar",
+  ["Captain Fearless"] = "Ab'Dendriel, Ankrahmun, Arcadia, Carlin, Darashia, Edron, Gray Island, Issavi, Liberty Bay, Port Hope, Rangiroa, Svargrond, Thais, Yalahar",
+  ["Captain Greyhound"] = "Thais, Ab'dendriel, Venore, Svargrond, Yalahar, Rangiroa, Arcadia, Edron",
+  ["Captain Seahorse"] = "Ab'Dendriel, Ankrahmun, Carlin, Cormaya, Gray Island, Gunther, Liberty Bay, Port Hope, Thais, Venore", 
+  ["Captain Frank"] = "Venore",
+  ["Captain Breezelda"] = "Arcadia, Carlin, Thais, Venore",
+  ["Captain Seagull"] = "Carlin, Edron, Gray Island, Thais, Venore, Yalahar",
+  ["Captain Sinbeard"] = "Darashia, Edron, Liberty Bay, Port Hope, Travora, Venore, Yalahar",
+  ["Captain Grenald"] = "Carlin, Svargrond, Thais, Venore, Yalahar",
+  ["Captain Chelop"] = "Thais",
+  ["Captain Harava"] = "Darashia, Krailos, Oramond, Venore",
+  ["Captain Pelagia"] = "Darashia, Edron, Issavi, Oramond, Venore",
+  ["Captain Gulliver"] = "Edron, Issavi, Krailos, Port Hope, Thais, Venore",
+  ["Captain Jack"] = "Tibia", 
+  ["Karith"] = "Ab'Dendriel, Ankrahmun, Arcadia, Carlin, Darashia, Liberty Bay, Port Hope, Thais, Venore",
+  ["Charles"] = "Ankrahmun, Darashia, Edron, Liberty Bay, Thais, Venore, Yalahar",
+  ["Jack Fate"] = "Ankrahmun, Darashia, Edron, Port Hope, Thais, Venore, Yalahar",
+  ["Scrutinon"] = "Ab'dendriel, Edron, Darashia, Venore",
+  ["Petros"] = "Ankrahmun, Gray Island, Issavi, Liberty Bay, Port Hope, Venore, Yalahar",
+  ["Pemaret"] = "Edron",
+  ["Chemar"] = "Edron, Farmine, Femor Hills, Issavi, Kazordoon, Marapur, Svargrond",
+  ["Tanyt"] = "Darashia, Edron, Farmine, Femor Hills, Kazordoon, Marapur, Svargrond",
+  ["Pino"] = "Darashia, Farmine, Femor Hills, Issavi, Kazordoon, Marapur, Svargrond",
+  ["Uzon"] = "Darashia, Edron, Farmine, Issavi, Kazordoon, Svargrond",
+  ["Gewen"] = "Darashia, Edron, Farmine, Femor Hills, Issavi, Marapur, Svargrond, Weekly Ticket",
+  ["Gurbasch"] = "Farmine, Gnomprona, Kazordoon",
+  ["Brodrosch"] = "Cormaya, Farmine, Gnomprona",
+  ["Thorgrin"] = "Cormaya, Gnomprona, Kazordoon",
+  ["Imbul"] = "Centre, East",
+  ["Lorek"] = "Banuta, Chor, Mountain Pass, West",
+  ["Dalbrect"] = "Passage",
+  ["Nielson"] = "Folda, Senja, Vega",
+  ["Svenson"] = "Senja, Tibia, Vega",
+  ["Carlson"] = "Folda, Senja, Tibia",
+  ["Anderson"] = "Folda, Tibia, Vega",
+  ["Iyad"] = "Edron, Darashia, Farmine, Issavi, Kazordoon, Marapur",
+  ["Buddel"] = "Okolnir, Svargrond, Tyrsung",
+  ["Harlow"] = "Vengoth, Yalahar",
+  ["Melian"] = "Darashia, Edron, Femor Hills, Issavi, Kazordoon, Marapur, Svargrond",
+  ["Urks The Mute"] = "Kazordoon, Cormaya",
+  ["Ziyad"] = "Darashia, Edron, Issavi, Kazordoon, Svargrond"
+}
+
+local TravelWindow = setupUI([[
+UIWindow
+  !text: tr('Travel')
+  color: #99d6ff
+  font: sans-bold-16px  
+  background-color: black
+  opacity: 0.85
+  anchors.verticalCenter: parent.verticalCenter
+  anchors.horizontalCenter: parent.horizontalCenter
+  size: 240 80
+
+  ComboBox
+    size: 220 20
+    id: travelOptions
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.top: parent.top
+    text-align: center
+    opacity: 1.0
+    color: yellow
+    font: sans-bold-16px
+    margin-top: 25
+    
+  Button
+    id: closeButton
+    text: X
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    color: #99d6ff
+    size: 15 15
+    margin-bottom: 10
+    margin-right: 10
+]], g_ui.getRootWidget())
+
+TravelWindow:hide()
+
+NPC.talk = function(text)
+  if (g_game.getClientVersion() >= 810) then
+      NPC.say(text)
+  else
+    return say(text)
+  end
+end
+
+local setOptions = function(npc)
+  TravelWindow.travelOptions:clear()
+  local npcName = npc:getName()
+  local cities = NPCsAndCities[npcName]
+  TravelWindow.travelOptions:addOption(npcName)
+  for _, city in ipairs(cities:split(",")) do
+    TravelWindow.travelOptions:addOption(city:trim())
+  end
+end
+
+local setup = function(npc)    
+  setOptions(npc)
+  TravelWindow:show()
+end
+
+local reset = function()
+  TravelWindow:hide()
+  TravelWindow.travelOptions:clear()
+  modules.game_interface.getRootPanel():focus()
+end
+
+TravelWindow.travelOptions.onOptionChange = function(widget, option, data)
+  if TravelWindow:isVisible() then         
+    say("hi")
+    schedule(500, function()
+      NPC.talk(option)
+    end)
+    schedule(1000, function()
+      NPC.talk("yes")
+    end)
+    reset()
+  end
+end
+
+local getTravelNPC = function()
+  for name,_ in pairs(NPCsAndCities) do
+    local npc = getCreatureByName(name)
+    if npc and distanceFromPlayer(npc:getPosition()) <= 2 then
+      return npc
+    end
+  end
+end
+
+onPlayerPositionChange(function(old, new)
+  local npc = getTravelNPC()
+  if npc and not TravelWindow:isVisible() then
+    setup(npc)
+  elseif not npc and TravelWindow:isVisible() then
+    reset()
+  end
+end)
+
 local panel = g_ui.getRootWidget():recursiveGetChildById('gameMapPanel')
 macro(100, function()
     for i, child in ipairs(panel:getChildren()) do

@@ -2200,7 +2200,7 @@ local PvPx = addIcon("onetwo", {item =37337, text = "PVP"}, function(icon, isOn)
     return g_game.setSafeFight(not isOn) 
 end)
 UI.Separator()
-local Avva = macro(200, "Avalanche", function()
+local Ava = macro(200, "Avalanche", function()
     if g_game.isAttacking() then
         usewith(3161, g_game.getAttackingCreature())
         delay(200)

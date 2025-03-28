@@ -2469,7 +2469,7 @@ local dance = macro(100, "Dance odoneee", function()
     turn(math.random(0,3))
 end)
 
-local miMacro = macro(100, "Dance treoss", function()
+local miMacro = macro(100, "Dance tress", function()
     local randomTurn = math.random(1, 2) == 1 and 1 or 3
     turn(randomTurn)
 end)

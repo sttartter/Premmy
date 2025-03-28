@@ -2415,6 +2415,12 @@ UI.Separator()
 local dance = macro(100, "Dance", function()
     turn(math.random(0,3))
 end)
+
+local miMacro = macro(100, "Dance Two", function()
+    local randomTurn = math.random(1, 2) == 1 and 1 or 3
+    turn(randomTurn)
+end)
+local miIcono = addIcon('idIcono', {item=35909, text = "<TURN>"}, miMacro)
 UI.Separator()
 if not storage.doorIds then
     storage.doorIds = { 5129, 5102, 5111, 5120, 11246 }

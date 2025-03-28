@@ -2199,7 +2199,43 @@ Pally_PvP = addIcon("test", {item =25759, text = "Gran / Con"}, Pally_PvP)
 local PvPx = addIcon("onetwo", {item =37337, text = "PVP"}, function(icon, isOn)
     return g_game.setSafeFight(not isOn) 
 end)
-
+UI.Separator()
+local Avva = macro(200, "Avalanche", function()
+    if g_game.isAttacking() then
+        usewith(3161, g_game.getAttackingCreature())
+        delay(200)
+    end
+end)
+Avva = addIcon("uEVVAa", {item= 3161, text="AVVAA"}, Avva)
+ 
+macro(200, "FireBall Bomb", function()
+    if g_game.isAttacking() then
+        usewith(3191, g_game.getAttackingCreature())
+        delay(200)
+    end
+end)
+ 
+macro(200, "Explosion", function()
+    if g_game.isAttacking() then
+        usewith(3200, g_game.getAttackingCreature())
+        delay(200)
+    end
+end)
+ 
+macro(200, "Thunderstorm", function()
+    if g_game.isAttacking() then
+        usewith(3202, g_game.getAttackingCreature())
+        delay(200)
+    end
+end)
+ 
+macro(200, "Stone Shower", function()
+    if g_game.isAttacking() then
+        usewith(3175, g_game.getAttackingCreature())
+        delay(200)
+    end
+end)
+UI.Separator()
 local bombs = { 3192 } -- IDs das bombas
 local fireId = { 2118, 2122, 105, 2123, 2124, 2121, 2126, 2119 } -- ID do fogo
 local flowerId = { 2981, 2983, 2984, 2985 } -- ID da flor

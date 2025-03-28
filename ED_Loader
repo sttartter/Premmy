@@ -649,13 +649,21 @@ UI.Label("-FAST HEAL SYSTEM-"):setColor("green")
 UI.Separator()
 
 
-local healingSpell = 'Exura Vita'
-local hpPercent = 95
-macro(270, "FAST EXURA VITA 95% - ED",  function()
+UI.Label("Heal Spell: 50mlsecs")
+local hpPercent = 97
+local xura = macro(50, "",  function()
   if (hppercent() <= hpPercent) then
-    say(healingSpell) 
-  end
+  say(storage.HealText)
+end
 end)
+addTextEdit("HealText", storage.HealText or "exura vita", function(widget, text) 
+storage.HealText = text
+end)
+local xura = addIcon("xura", {text = "VITA"}, function(self, isOn)
+    self.item:setItemId(isOn and 30060 or 30059)
+    xura.setOn(isOn)
+end)
+
   
 local manaId = 23373
 local manaPercent = 70

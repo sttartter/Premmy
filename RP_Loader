@@ -29,8 +29,7 @@ local luaFiles = {
   "Conditions",
   "Equipper",
   "pushmax",
-  "combo",
-  "HealBot",
+  "combo",  "HealBot",
   "new_healer",
   "AttackBot", -- last of major modules
   "ingame_editor", 
@@ -54,3 +53,2579 @@ setDefaultTab("Main")
 UI.Separator()
 UI.Label("Private Scripts:")
 UI.Separator()
+
+setDefaultTab("Main")
+
+--[[
+  1. Start the script with your normal ring on 
+  2. make sure the backpack with e-rings
+     are always open
+]]--
+-- By 
+UI.Separator()
+function theinmortal()
+    local panelName = "theinmortal"
+    local UI = setupUI([[
+Panel
+  height: 173
+  margin-top: 2
+
+  Label
+    id: label1
+    text: -[INMORTAL]-:
+    anchors.top: parent.top
+    anchors.left: parent.left
+    margin-left: 50
+    color: #599dff
+    text-align: center
+
+  Label
+    id: labelSSA
+    text: SSA when <= 50%:
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: label1.bottom
+    margin-top: 5
+    margin-left: 1
+    color: #77D390
+    text-align: center
+
+  HorizontalScrollBar
+    id: scrollSSA
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: labelSSA.bottom
+    margin-left: 5
+    margin-right: 5
+    margin-top: 5
+    minimum: 1
+    maximum: 100
+    step: 1
+
+  Label
+    id: labelMR
+    text: MIGHT RING when <= 50%:
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: scrollSSA.bottom
+    color: #77D390
+    margin-top: 5
+    text-align: center
+
+  HorizontalScrollBar
+    id: scrollMR
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: labelMR.bottom
+    margin-left: 5
+    margin-right: 5
+    margin-top: 5
+    minimum: 1
+    maximum: 100
+    step: 1
+
+  Label
+    id: labelUtamo
+    text: Utamo Ring when <= 50%:
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: scrollMR.bottom
+    color: #77D390
+    margin-top: 5
+    text-align: center
+
+  HorizontalScrollBar
+    id: scrollUtamo
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: labelUtamo.bottom
+    margin-left: 5
+    margin-right: 5
+    margin-top: 5
+    minimum: 1
+    maximum: 100
+    step: 1
+
+  BotSwitch
+    id: switchUtamo
+    anchors.top: scrollUtamo.top
+    anchors.right: parent.right
+    anchors.left: parent.left
+    margin-top: 20
+    text-align: center
+    text: Anillo Utamo
+
+  BotSwitch
+    id: switch
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    anchors.left: parent.left
+    text-align: center
+    width: 130
+    height: 25
+    !text: tr('Inmortal')
+
+
+
+]])
+    if not storage[panelName] then
+        storage[panelName] = {
+            ssaValue = 70,
+            mrValue = 70,
+            uRingValue = 30,
+            btnInmortal = false,
+            btnAnilloU = false
+        }
+    end
+
+    UI.switch:setOn(storage[panelName].btnInmortal)
+    UI.switch.onClick = function(widget)
+        storage[panelName].btnInmortal = not storage[panelName].btnInmortal
+        widget:setOn(storage[panelName].btnInmortal)
+    end
+
+    UI.switchUtamo:setOn(storage[panelName].btnAnilloU)
+    UI.switchUtamo.onClick = function(widget)
+        storage[panelName].btnAnilloU = not storage[panelName].btnAnilloU
+        widget:setOn(storage[panelName].btnAnilloU)
+    end
+
+    UI.labelSSA:setText("SSA ON <= " .. storage[panelName].ssaValue .. "%")
+
+    UI.scrollSSA:setValue(storage[panelName].ssaValue)
+    UI.scrollSSA.onValueChange = function(scroll, value)
+        storage[panelName].ssaValue = value
+        UI.labelSSA:setText("SSA ON <= " .. value .. "%")
+    end
+
+    UI.labelMR:setText("MIGHT RING ON <= " .. storage[panelName].mrValue .. "%")
+    UI.scrollMR:setValue(storage[panelName].mrValue)
+    UI.scrollMR.onValueChange = function(scroll, value)
+        storage[panelName].mrValue = value
+        UI.labelMR:setText("MIGHT RING ON <= " .. value .. "%")
+    end
+
+    UI.labelUtamo:setText("UTAMO RING ON <= " .. storage[panelName].uRingValue .. "%")
+    UI.scrollUtamo:setValue(storage[panelName].uRingValue)
+    UI.scrollUtamo.onValueChange = function(scroll, value)
+        storage[panelName].uRingValue = value
+        UI.labelUtamo:setText("UTAMO RING ON <= " .. value .. "%")
+    end
+
+    local amulet = 3081
+    local ring = 3048
+    local ering = 3051
+    local aering = 3088
+    local lastAction = now
+
+    function desequipar(value)
+        local item = Item.create(value)
+        g_game.equipItem(item)
+    end
+
+    -- basic ring check
+    function defaultRingFind()
+        if storage[panelName].ringEnabled then
+            if getFinger() and (getFinger():getId() ~= ring and getFinger():getId() ~= getActiveItemId(ring)) then
+                defaultRing = getInactiveItemId(getFinger():getId())
+            else
+                defaultRing = false
+            end
+        end
+    end
+
+    -- basic amulet check
+    function defaultAmmyFind()
+        if storage[panelName].ammyEnabled then
+            if getNeck() and (getNeck():getId() ~= amulet and getNeck():getId() ~= getActiveItemId(amulet)) then
+                defaultAmmy = getInactiveItemId(getNeck():getId())
+            else
+                defaultAmmy = false
+            end
+        end
+    end
+
+    macro(10, function()
+        if now - lastAction < math.max(math.max(g_game.getPing() * 2, 150), 300) then
+            return
+        end
+        if not storage[panelName].btnInmortal then
+            return
+        end
+
+        local eringEquipped = getFinger() and (getFinger():getId() == aering)
+        local ringEquipped = getFinger() and
+                                 (getFinger():getId() == ring or getFinger():getId() == getActiveItemId(ring))
+        local ssaEquipped = getNeck() and (getNeck():getId() == amulet or getNeck():getId() == getActiveItemId(amulet))
+
+        if eringEquipped then
+            -- SSA --
+            if not ssaEquipped and storage[panelName].btnAnilloU then
+                defaultAmmyFind()
+                if hppercent() <= storage[panelName].ssaValue then
+                    g_game.equipItemId(amulet)
+                    lastAction = now
+                    return
+                end
+            elseif ssaEquipped and hppercent() > storage[panelName].ssaValue then
+                desequipar(amulet)
+                lastAction = now
+                return
+            end
+        end
+
+        -- SI NO TIENE ACTIVADO EL BOTON DE E RING
+        if not storage[panelName].btnAnilloU then
+            if hasManaShield() then
+                -- MIGHT RING --
+                if not ringEquipped then
+                    defaultRingFind()
+                    if manapercent() <= storage[panelName].mrValue then
+                        g_game.equipItemId(ring)
+                        lastAction = now
+                        return
+                    end
+                elseif ringEquipped then
+                    if manapercent() > storage[panelName].mrValue then
+                        desequipar(ring)
+                        lastAction = now
+                        return
+                    end
+                end
+
+            elseif not hasManaShield() then
+                -- MIGHT RING --
+                if not ringEquipped then
+                    defaultRingFind()
+                    if hppercent() <= storage[panelName].mrValue then
+                        g_game.equipItemId(ring)
+                        lastAction = now
+                        return
+                    end
+                elseif ringEquipped then
+                    if hppercent() > storage[panelName].mrValue then
+                        desequipar(ring)
+                        lastAction = now
+                        return
+                    end
+                end
+            end
+
+        end
+        if storage[panelName].btnAnilloU then
+            -- MIGHT RING --
+            if not ringEquipped then
+                defaultRingFind()
+                if hppercent() <= storage[panelName].mrValue and hppercent() > storage[panelName].uRingValue then
+                    g_game.equipItemId(ring)
+                    lastAction = now
+                    return
+                elseif hppercent() <= storage[panelName].uRingValue or
+                    (getFinger() == nil and hppercent() <= storage[panelName].uRingValue) then
+                    g_game.equipItemId(ering)
+                    lastAction = now
+                    return
+                elseif eringEquipped and hppercent() > storage[panelName].uRingValue then
+                    desequipar(aering)
+                    lastAction = now
+                    return
+                end
+            elseif ringEquipped then
+                if hppercent() > storage[panelName].mrValue then
+                    desequipar(ring)
+                    lastAction = now
+                    return
+                end
+                if hppercent() <= storage[panelName].uRingValue then
+                    g_game.equipItemId(ering)
+                    lastAction = now
+                    return
+                end
+            end
+        end
+
+        if storage[panelName].btnAnilloU and storage[panelName].mrValue <= storage[panelName].uRingValue then
+            warn("NO PUEDES PONER MAS ALTO EL PORCENTAJE DEL ENERGY RING QUE EL DE MIGHT RING")
+            storage[panelName].uRingValue = storage[panelName].mrValue - 10
+            UI.scrollUtamo:setValue(storage[panelName].uRingValue)
+            UI.labelUtamo:setText("UTAMO RING ON <= " .. storage[panelName].uRingValue .. "%")
+            return
+        end
+        if hasManaShield() then
+            -- SSA --
+            if not ssaEquipped then
+                defaultAmmyFind()
+                if manapercent() <= storage[panelName].ssaValue then
+                    g_game.equipItemId(amulet)
+                    lastAction = now
+                    return
+                end
+            elseif ssaEquipped and manapercent() > storage[panelName].ssaValue then
+                desequipar(amulet)
+                lastAction = now
+                return
+            end
+        else
+            -- SSA --
+            if not ssaEquipped then
+                defaultAmmyFind()
+                if hppercent() <= storage[panelName].ssaValue then
+                    g_game.equipItemId(amulet)
+                    lastAction = now
+                    return
+                end
+            elseif ssaEquipped and hppercent() > storage[panelName].ssaValue then
+                desequipar(amulet)
+                lastAction = now
+                return
+            end
+        end
+
+        
+    end)
+end -- END FUNCTION theinmortal
+
+if g_game.getClientVersion() >= 1000 then
+    theinmortal()
+    
+end
+
+local cIcon = addIcon("cI",{text="Cave\nBot",switchable=false,moveable=true}, function()
+  if CaveBot.isOff() then 
+    CaveBot.setOn()
+  else 
+    CaveBot.setOff()
+  end
+end)
+cIcon:setSize({height=30,width=50})
+cIcon.text:setFont('verdana-11px-rounded')
+ 
+local tIcon = addIcon("tI",{text="Target\nBot",switchable=false,moveable=true}, function()
+  if TargetBot.isOff() then 
+    TargetBot.setOn()
+  else 
+    TargetBot.setOff()
+  end
+end)
+tIcon:setSize({height=30,width=50})
+tIcon.text:setFont('verdana-11px-rounded')
+ 
+macro(50,function()
+  if CaveBot.isOn() then
+    cIcon.text:setColoredText({"Cave BOT\n","white","ON","green"})
+  else
+    cIcon.text:setColoredText({"Cave Bot\n","white","OFF","red"})
+  end
+  if TargetBot.isOn() then
+    tIcon.text:setColoredText({"Target BOT\n","white","ON","green"})
+  else
+    tIcon.text:setColoredText({"Target Bot\n","white","OFF","red"})
+  end
+end)
+
+------ ATTACKBOT
+ 
+local aBot = addIcon("aBot",{text="Attack Bot",switchable=false,moveable=true}, function()
+  if AttackBot.isOff() then 
+    AttackBot.setOn()
+  else 
+    AttackBot.setOff()
+  end
+end)
+aBot:setSize({height=30,width=50})
+aBot.text:setFont('verdana-11px-rounded')
+ 
+macro(50,function()
+  if AttackBot.isOn() then
+    aBot.text:setColoredText({"Attack BOT\n","white","ON","green"})
+  else
+    aBot.text:setColoredText({"Attack Bot\n","white","OFF","red"})
+  end
+end)
+
+setDefaultTab("tools")
+UI.Separator()
+UI.Label("-[ PARTY SCRIPTS]-"):setColor("#599dff")
+UI.Separator()
+-----------------
+local infoTime = 0
+local talkTime = 0
+local maxLevel = 0
+local minLevel = 0
+local justForInfo = true
+local canSeeInfo = true
+local partyMembersCount = 0
+
+local partyLeaderHuntWidget = macro(1000, "Party Leader Hunt", function()
+  if not player:isPartyLeader() then
+    justForInfo = true
+    partyMembersCount = 0
+    return
+  end
+  if justForInfo and canSeeInfo then
+    sayChannel(getChannelId("party"), "!party info")
+    return
+  end
+  if talkTime > 0 then
+    talkTime = talkTime - 1
+  end
+  if player:getShield() == 10 then
+    infoTime = infoTime + 1
+    if infoTime >= 20 then
+      sayChannel(getChannelId("party"), "!party info")
+      infoTime = 0
+    end
+  else
+    infoTime = 0
+  end
+end)
+
+addLabel("maxLevel", "Max Level:")
+addTextEdit("maxLevel", storage.maxLevel or "", function(widget, text)
+  if tonumber(text) then
+    maxLevel = tonumber(text)
+  else
+    sayChannel(getChannelId("party"), "!party info")
+  end
+  storage.maxLevel = tonumber(text)
+end)
+
+addLabel("minLevel", "Min Level:")
+addTextEdit("minLevel", storage.minLevel or "", function(widget, text)
+  if tonumber(text) then
+    minLevel = tonumber(text)
+  else
+    sayChannel(getChannelId("party"), "!party info")
+  end
+  storage.minLevel = tonumber(text)
+end)
+
+onTalk(function(name, level, mode, text, channelId, pos)
+  if partyLeaderHuntWidget:isOn() then
+    if name == player:getName() then return end
+    if text:lower():find("pt") or (text:lower():find("party") and not text:lower():find("!party")) then
+      for _, spec in ipairs(getSpectators()) do
+        if spec:getName() == name then
+          if spec:isPartyMember() then return end
+          if spec:getShield() == 2 then
+            g_game.talkPrivate(5, name, name .. ", I already invited you")
+            return
+          end
+          if level > maxLevel or level < minLevel then
+            g_game.talkPrivate(5, name, name .. ", the minimum level is " .. minLevel .. " and the maximum is " .. maxLevel)
+            return
+          end
+          if partyMembersCount >= 30 then
+            g_game.talkPrivate(5, name, name .. ", the party already has 30 players for a better use of the shared experience.")
+            return
+          end
+          g_game.partyInvite(spec:getId())
+        end
+      end
+    end
+  end
+end)
+
+onLoginAdvice(function(text)
+  if partyLeaderHuntWidget:isOn() then
+    local explode1 = string.explode(text, "*")
+    local explode2 = string.explode(explode1[8], ":")[2]
+    if not storage.maxLevel then
+      maxLevel = math.ceil(tonumber(string.explode(explode1[4], ":")[2])*3/2)
+    else
+      maxLevel = storage.maxLevel
+    end
+    if not storage.minLevel then
+      minLevel = math.ceil(tonumber(string.explode(explode1[3], ":")[2])*2/3)
+    else
+      minLevel = storage.minLevel
+    end
+    partyMembersCount = tonumber(string.explode(explode1[2], ":")[2])
+    if justForInfo then
+      justForInfo = false
+      return
+    end
+    if explode2:find(",") then
+      local names = string.explode(explode2, ",")
+      for i = 1, #names do
+        canSeeInfo = false
+        schedule(1000 * i, function()
+          if i == #names then
+            canSeeInfo = true
+          end
+          sayChannel(getChannelId("party"), "!party kick," .. names[i])
+        end)
+      end
+    elseif explode2 ~= "" then
+      schedule(1000, function() sayChannel(getChannelId("party"), "!party kick," .. explode2) end)
+    end
+  end
+end)
+
+onCreatureAppear(function(creature)
+  if partyLeaderHuntWidget:isOn() then
+    if not creature:isPlayer() then return end
+    if creature:isLocalPlayer() then return end
+    if creature:getShield() == 2 then return end
+    if creature:isPartyMember() then return end
+    if talkTime == 0 and partyMembersCount < 30 then
+      say("If you want to join the party, say 'pt' so I can invite you")
+      talkTime = 15
+    end
+  end
+end)
+
+onTextMessage(function(mode, text)
+  if partyLeaderHuntWidget:isOn() then
+    if text:lower():find("you are now the leader of the party.") or text:lower():find("has joined the party.") or (text:lower():find("has left the party.") and canSeeInfo) then
+      justForInfo = true
+    end
+  end
+end)
+
+UI.Separator()
+local autoParty = macro(10000, "Auto Dar Party", function() end)
+onTalk(function(name, level, mode, text, channelId, pos)
+    if autoParty:isOff() then return end
+    if player:getShield() == 4 then 
+        g_game.partyShareExperience(not player:isPartySharedExperienceActive())
+    end
+    if name == player:getName() then return end
+    if mode ~= 1 then  return end
+    if string.find(string.lower(text), string.lower(storage.localpt)) then
+        local friend = getPlayerByName(name)
+        g_game.partyInvite(friend:getId())
+    end
+end)
+
+UI.TextEdit(storage.localpt or "Get PT", function(widget, text)
+    storage.localpt = text
+end)
+
+UI.Separator()
+macro(1000,"Auto Aceptar Party",function() 
+  if player:getShield() > 2 then return end -- already in a party
+  for s, spec in pairs(getSpectators(false)) do
+    if spec:getShield() == 1 then
+      g_game.partyJoin(spec:getId())
+      delay(1000)
+    end
+  end
+end)
+UI.Separator()
+setDefaultTab("hp")
+UI.Separator()
+
+UI.Label("Haste Spell:")
+UI.TextEdit(storage.hasteSpell or "utani hur", function(widget, newText)
+storage.hasteSpell = newText
+end)
+macro(500, "HASTE", function()
+if hasHaste() then return end
+if TargetBot then
+TargetBot.saySpell(storage.hasteSpell) -- sync spell with targetbot if available
+else
+say(storage.hasteSpell)
+end
+end)
+
+UI.Separator()
+UI.Label("Anti Paralyze Spell:")
+UI.TextEdit(storage.antiParalyze or "utani hur", function(widget, newText)
+  storage.antiParalyze = newText
+end)
+
+macro(100, "ANTI PARALYZE", function() 
+  if not isParalyzed() then return end
+  if TargetBot then 
+    TargetBot.saySpell(storage.antiParalyze) -- sync spell with targetbot if available
+  else
+    say(storage.antiParalyze)
+  end
+end)
+
+UI.Separator()
+UI.Label("-FAST HEAL SYSTEM-"):setColor("green")
+UI.Separator()
+
+
+local healingSpell = 'Exura Gran San'
+local hpPercent = 95
+macro(270, "FAST GRAN SAN 95% - RP",  function()
+  if (hppercent() <= hpPercent) then
+    say(healingSpell) 
+  end
+end)
+
+local hpId = 23374
+local hpPercent = 90
+macro(200, "FAST SPIRIT 90% - RP",  function()
+  if (hppercent() <= hpPercent) then
+    usewith(hpId, player) 
+  end
+end)
+  
+local manaId = 238
+local manaPercent = 65
+macro(360, "FAST MANA 65% - RP",  function()
+  if (manapercent() <= manaPercent) then
+    usewith(manaId, player) 
+  end
+end)
+
+UI.Separator()
+UI.Label(" -NORMAL HEAL SYSTEM- "):setColor("yellow")
+UI.Separator()
+
+UI.Label("Spells")
+
+if type(storage.healing1) ~= "table" then
+  storage.healing1 = {on=false, title="HP%", text="exura", min=51, max=90}
+end
+if type(storage.healing2) ~= "table" then
+  storage.healing2 = {on=false, title="HP%", text="exura vita", min=0, max=50}
+end
+
+-- create 2 healing widgets
+for _, healingInfo in ipairs({storage.healing1, storage.healing2}) do
+  local healingmacro = macro(20, function()
+    local hp = player:getHealthPercent()
+    if healingInfo.max >= hp and hp >= healingInfo.min then
+      if TargetBot then 
+        TargetBot.saySpell(healingInfo.text) -- sync spell with targetbot if available
+      else
+        say(healingInfo.text)
+      end
+    end
+  end)
+  healingmacro.setOn(healingInfo.on)
+
+  UI.DualScrollPanel(healingInfo, function(widget, newParams) 
+    healingInfo = newParams
+    healingmacro.setOn(healingInfo.on)
+  end)
+end
+
+
+UI.Separator()
+UI.Label("Potions - Runes")
+UI.Separator()
+
+if type(storage.hpitem1) ~= "table" then
+  storage.hpitem1 = {on=false, title="HP%", item=266, min=51, max=90}
+end
+if type(storage.hpitem2) ~= "table" then
+  storage.hpitem2 = {on=false, title="HP%", item=3160, min=0, max=50}
+end
+if type(storage.manaitem1) ~= "table" then
+  storage.manaitem1 = {on=false, title="MP%", item=268, min=51, max=90}
+end
+if type(storage.manaitem2) ~= "table" then
+  storage.manaitem2 = {on=false, title="MP%", item=3157, min=0, max=50}
+end
+
+for i, healingInfo in ipairs({storage.hpitem1, storage.hpitem2, storage.manaitem1, storage.manaitem2}) do
+  local healingmacro = macro(20, function()
+    local hp = i <= 2 and player:getHealthPercent() or math.min(100, math.floor(100 * (player:getMana() / player:getMaxMana())))
+    if healingInfo.max >= hp and hp >= healingInfo.min then
+      if TargetBot then 
+        TargetBot.useItem(healingInfo.item, healingInfo.subType, player) -- sync spell with targetbot if available
+      else
+        local thing = g_things.getThingType(healingInfo.item)
+        local subType = g_game.getClientVersion() >= 860 and 0 or 1
+        if thing and thing:isFluidContainer() then
+          subType = healingInfo.subType
+        end
+        g_game.useInventoryItemWith(healingInfo.item, player, subType)
+      end
+    end
+  end)
+  healingmacro.setOn(healingInfo.on)
+
+  UI.DualScrollItemPanel(healingInfo, function(widget, newParams) 
+    healingInfo = newParams
+    healingmacro.setOn(healingInfo.on and healingInfo.item > 100)
+  end)
+end
+
+if g_game.getClientVersion() < 780 then
+  UI.Label("In old tibia potions & runes work only when you have backpack with them opened")
+end
+
+UI.Separator()
+UI.Label("<<<<<<<<<>>>>>>>>>>")
+UI.Separator()
+
+storage.hpfriendh = storage.hpfriendh or "85"
+storage.uh = storage.uh or "238"
+storage.delayuh = storage.delayuh or "1000"
+storage.friendNameh = storage.friendNameh or ""
+
+local defaultFriendList = [[
+Friend list UH
+Example:
+Player1
+Player2
+Player3
+]]
+
+macro(650, "UH en AMIGOS", function()
+  local friendPercent = tonumber(storage.hpfriendh) or 85
+  local uhId = tonumber(storage.uh) or 238
+  local useDelay = tonumber(storage.delayuh) or 1000 
+
+  local friends = {}
+  for _, line in ipairs(string.split(storage.friendNameh, "\n")) do
+    local trimmed = line:match("^%s*(.-)%s*$") 
+    if trimmed ~= "" then
+      table.insert(friends, trimmed)
+    end
+  end
+
+  for _, spec in pairs(getSpectators()) do
+    if table.contains(friends, spec:getName(), true) and spec:getHealthPercent() <= friendPercent then
+      useWith(uhId, spec)
+      delay(useDelay) 
+    end
+  end
+end)
+
+UI.Label("Friend Heal")
+
+UI.TextEdit(storage.hpfriendh, function(widget, text)
+  storage.hpfriendh = text
+end)
+
+UI.Label("Potion ID")
+
+UI.TextEdit(storage.uh, function(widget, text)
+  storage.uh = text
+end)
+
+UI.Label("Potion Use Delay")
+
+UI.TextEdit(storage.delayuh, function(widget, text)
+  storage.delayuh = text
+end)
+
+UI.Button("Friend List", function()
+  UI.MultilineEditorWindow(
+    storage.friendNameh,
+    {
+      title = "Friend List UH",
+      description = defaultFriendList
+    },
+    function(text)
+      storage.friendNameh = text
+    end
+  )
+end)
+UI.Separator()
+if voc() ~= 1 and voc() ~= 11 then
+    if storage.foodItems then
+        local t = {}
+        for i, v in pairs(storage.foodItems) do
+            if not table.find(t, v.id) then
+                table.insert(t, v.id)
+            end
+        end
+        local foodItems = { 3607, 3585, 3592, 3600, 3601 }
+        for i, item in pairs(foodItems) do
+            if not table.find(t, item) then
+                table.insert(storage.foodItems, item)
+            end
+        end
+    end
+    macro(500, "Cast Food", function()
+        if player:getRegenerationTime() <= 400 then
+            cast("exevo pan", 5000)
+        end
+    end)
+end
+
+UI.Label("Eatable items:")
+if type(storage.foodItems) ~= "table" then
+  storage.foodItems = {3582, 3577}
+end
+
+local foodContainer = UI.Container(function(widget, items)
+  storage.foodItems = items
+end, true)
+foodContainer:setHeight(35)
+foodContainer:setItems(storage.foodItems)
+
+macro(500, "Eat Food", function()
+  if player:getRegenerationTime() > 400 or not storage.foodItems[1] then return end
+  -- search for food in containers
+  for _, container in pairs(g_game.getContainers()) do
+    for __, item in ipairs(container:getItems()) do
+      for i, foodItem in ipairs(storage.foodItems) do
+        if item:getId() == foodItem.id then
+          return g_game.use(item)
+        end
+      end
+    end
+  end
+end)
+UI.Separator()
+local scripts = 2 -- if you want more auto equip panels you can change 2 to higher value
+
+-- script by kondrah, don't edit below unless you know what you are doing
+UI.Label("Auto equip")
+if type(storage.autoEquip) ~= "table" then
+  storage.autoEquip = {}
+end
+for i=1,scripts do
+  if not storage.autoEquip[i] then
+    storage.autoEquip[i] = {on=false, title="Auto Equip", item1=i == 1 and 3052 or 0, item2=i == 1 and 3089 or 0, slot=i == 1 and 9 or 0}
+  end
+  UI.TwoItemsAndSlotPanel(storage.autoEquip[i], function(widget, newParams)
+    storage.autoEquip[i] = newParams
+  end)
+end
+macro(250, function()
+  local containers = g_game.getContainers()
+  for index, autoEquip in ipairs(storage.autoEquip) do
+    if autoEquip.on then
+      local slotItem = getSlot(autoEquip.slot)
+      if not slotItem or (slotItem:getId() ~= autoEquip.item1 and slotItem:getId() ~= autoEquip.item2) then
+        for _, container in pairs(containers) do
+          for __, item in ipairs(container:getItems()) do
+            if item:getId() == autoEquip.item1 or item:getId() == autoEquip.item2 then
+              g_game.move(item, {x=65535, y=autoEquip.slot, z=0}, item:getCount())
+              delay(1000) -- don't call it too often      
+              return
+            end
+          end
+        end
+      end
+    end
+  end
+end)
+--
+setDefaultTab("PVP")
+--
+UI.Separator()
+-- Establece la pestaÃ±a por defecto en "spells"
+setDefaultTab("pvp")
+
+-- Crea una etiqueta de UI con el texto 
+local name = UI.Label("ANTIPUSH - I")
+
+-- Define una macro que se ejecuta cada 800 milisegundos
+macro(800, function()
+  local rainbowDelay = 0 -- Inicializa el retraso del arco iris
+
+  -- Itera sobre una lista de colores
+  for k, color in ipairs({"#00bfff", "#0099cc"}) do
+    -- Programa una funciÃ³n que cambia el color de la etiqueta despuÃ©s de un retraso
+    schedule(rainbowDelay, function()
+      name:setColor(color) -- Establece el color de la etiqueta
+    end)
+
+    -- Incrementa el retraso para el prÃ³ximo color
+    rainbowDelay = rainbowDelay + 300 -- Tiempo entre colores
+  end
+end, pvpTab)
+UI.Separator()
+  if not storage.AntiPushItems then
+    storage.AntiPushItems = "3031,3035"
+  end
+  addTextEdit("antiPushItemsTxtEdit", storage.AntiPushItems, function(widget, text)
+    storage.AntiPushItems = text
+  end)
+  addSeparator()
+
+  local function stringToTable(inputstr, sep)
+    if sep == nil then
+      sep = ","
+    end
+    local t = {}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+          table.insert(t, tonumber(str))
+    end
+    return t
+  end
+
+  local goldIds = 
+  {
+    [3031] = 3035,
+    [3035] = 3043
+  }
+
+  local function AntiPush()
+    local dropItems = stringToTable(storage.AntiPushItems)
+    local tile = g_map.getTile(pos())
+    if not tile  then return end
+    local thing = tile:getTopThing()
+    if not thing then return end
+    for i, item in pairs(dropItems) do
+      if item ~= thing:getId() then
+        local dropItem = findItem(item)
+        if dropItem then
+          if dropItem:getCount() == 1 then
+            g_game.move(dropItem, pos(), 1)
+          else
+            g_game.move(dropItem, pos(), 2)
+          end
+        elseif goldIds[item] ~= nil then
+          --change gold
+          local nextCurrency = findItem(goldIds[item])
+          if not nextCurrency then return end
+          g_game.use(nextCurrency)
+        end
+      end
+    end
+  end
+  local isOn = false
+  local antiPushIcon = addIcon("antipushIcon", {item={id=22721, count=1}, text="Anti Push"},           
+  macro(600, function(m)
+    AntiPush()
+    isOn = true
+    schedule(600, function() 
+      if m.isOff() then
+       isOn=false 
+      end
+    end)
+  end))
+
+  onPlayerPositionChange(function() 
+    if not isOn then return end
+      AntiPush()
+  end)
+
+trashie = macro(200, function()
+        push(0, -1, 0)
+        push(0, 1, 0)
+        push(-1, -1, 0)
+        push(-1, 0, 0)
+        push(-1, 1, 0)
+        push(1, -1, 0)
+        push(1, 0, 0)
+        push(1, 1, 0)
+end)
+
+function push(x, y, z)
+    local position = player:getPosition()
+    position.x = position.x + x
+    position.y = position.y + y
+
+    local tile = g_map.getTile(position)
+    local thing = tile:getTopThing()
+    if thing and thing:isItem() then
+      g_game.move(thing, player:getPosition(), thing:getCount())
+    end
+end
+
+local trashie = addIcon("Trashie", {item=22516, text="Push TRASH"}, function(icon, isOn)
+trashie.setOn(isOn)
+end)
+
+---
+-- Establece la pestaÃ±a por defecto en "spells"
+setDefaultTab("PVP")
+
+-- Crea una etiqueta de UI con el texto 
+local name = UI.Label("ANTIPUSH - II")
+
+-- Define una macro que se ejecuta cada 800 milisegundos
+macro(800, function()
+  local rainbowDelay = 0 -- Inicializa el retraso del arco iris
+
+  -- Itera sobre una lista de colores
+  for k, color in ipairs({"#00bfff", "#0099cc"}) do
+    -- Programa una funciÃ³n que cambia el color de la etiqueta despuÃ©s de un retraso
+    schedule(rainbowDelay, function()
+      name:setColor(color) -- Establece el color de la etiqueta
+    end)
+
+    -- Incrementa el retraso para el prÃ³ximo color
+    rainbowDelay = rainbowDelay + 300 -- Tiempo entre colores
+  end
+end, PVPTab)
+UI.Separator()
+AntiPush = function(parent)
+  if not parent then
+    parent = panel
+  end
+  
+  local panelName = "antiPushPanel"  
+  local ui = g_ui.createWidget("ItemsPanel", parent)
+  ui:setId(panelName)
+
+  if not storage[panelName] then
+    storage[panelName] = {}
+  end
+
+  ui.title:setText("Anti-Push Items")
+  ui.title:setOn(storage[panelName].enabled)
+  ui.title.onClick = function(widget)
+    storage[panelName].enabled = not storage[panelName].enabled
+    widget:setOn(storage[panelName].enabled)
+  end
+  
+  if type(storage[panelName].items) ~= 'table' then
+    storage[panelName].items = {3031, 3035, 0, 0, 0}
+  end
+
+  for i=1,5 do
+    ui.items:getChildByIndex(i).onItemChange = function(widget)
+      storage[panelName].items[i] = widget:getItemId()
+    end
+    ui.items:getChildByIndex(i):setItemId(storage[panelName].items[i])    
+  end
+  
+  macro(100,function()    
+    if not storage[panelName].enabled then
+      return
+    end
+    local tile = g_map.getTile(player:getPosition())
+    if not tile then
+      return
+    end
+    local topItem = tile:getTopUseThing()
+    if topItem and topItem:isStackable() then
+      topItem = topItem:getId()
+    else
+      topItem = 0    
+    end
+    local candidates = {}
+    for i, item in pairs(storage[panelName].items) do
+      if item >= 100 and item ~= topItem and findItem(item) then
+        table.insert(candidates, item)
+      end
+    end
+    if #candidates == 0 then
+      return
+    end
+    if type(storage[panelName].lastItem) ~= 'number' or storage[panelName].lastItem > #candidates then
+      storage[panelName].lastItem = 1
+    end
+    local item = findItem(candidates[storage[panelName].lastItem])
+    g_game.move(item, player:getPosition(), 1)
+    storage[panelName].lastItem = storage[panelName].lastItem + 1
+  end)
+end
+
+AntiPush(setDefaultTab("Pvp"))
+addSeparator()
+
+-- Establece la pestaÃ±a por defecto en "spells"
+setDefaultTab("PVP")
+
+-- Crea una etiqueta de UI con el texto 
+local name = UI.Label("CURSOR ITEMS")
+
+-- Define una macro que se ejecuta cada 800 milisegundos
+macro(800, function()
+  local rainbowDelay = 0 -- Inicializa el retraso del arco iris
+
+  -- Itera sobre una lista de colores
+  for k, color in ipairs({"#00bfff", "#0099cc"}) do
+    -- Programa una funciÃ³n que cambia el color de la etiqueta despuÃ©s de un retraso
+    schedule(rainbowDelay, function()
+      name:setColor(color) -- Establece el color de la etiqueta
+    end)
+
+    -- Incrementa el retraso para el prÃ³ximo color
+    rainbowDelay = rainbowDelay + 300 -- Tiempo entre colores
+  end
+end, PVPTab)
+
+
+UI.Separator()
+hotkey("Shift+f1", "Item on Mouse", function()
+    local tile = getTileUnderCursor()
+    if tile then
+        local pos = tile:getPosition()
+        local itemToMouse = 3031
+        for _, container in pairs(g_game.getContainers()) do
+            for __, item in ipairs(container:getItems()) do
+                if item:getId() == itemToMouse then
+                    return g_game.move(item, pos, 1)
+                end
+            end
+        end
+    end
+end)
+
+
+hotkey("Shift+f2", "Item Around Mouse", function()
+        local neighbours = {
+            { x = 0, y = -1, z = 0 },
+            { x = -1, y = -1, z = 0 },
+            { x = -1, y = 0, z = 0 },
+            { x = -1, y = 1, z = 0 },
+            { x = 0, y = 1, z = 0 },
+            { x = 1, y = 1, z = 0 },
+            { x = 1, y = 0, z = 0 },
+            { x = 1, y = -1, z = 0 }
+        }
+    local tile = getTileUnderCursor()
+    if tile then
+        local pos = tile:getPosition()
+        local itemToMouse = 3031
+        for _, container in pairs(g_game.getContainers()) do
+            for __, item in ipairs(container:getItems()) do
+                if item:getId() == itemToMouse then
+                    for k, v in pairs(neighbours) do
+                        local posN = { x = pos.x + v.x, y = pos.y + v.y, z = pos.z + v.z }
+                        g_game.move(item, posN, 1)
+                    end
+                    return
+                end
+
+            end
+        end
+    end
+end)
+UI.Separator()
+-- Establece la pestaÃ±a por defecto en "spells"
+setDefaultTab("PVP")
+
+-- Crea una etiqueta de UI con el texto 
+local name = UI.Label("ANTIPUSH - III")
+
+-- Define una macro que se ejecuta cada 800 milisegundos
+macro(800, function()
+  local rainbowDelay = 0 -- Inicializa el retraso del arco iris
+
+  -- Itera sobre una lista de colores
+  for k, color in ipairs({"#00bfff", "#0099cc"}) do
+    -- Programa una funciÃ³n que cambia el color de la etiqueta despuÃ©s de un retraso
+    schedule(rainbowDelay, function()
+      name:setColor(color) -- Establece el color de la etiqueta
+    end)
+
+    -- Incrementa el retraso para el prÃ³ximo color
+    rainbowDelay = rainbowDelay + 300 -- Tiempo entre colores
+  end
+end, PVPTab)
+UI.Separator()
+  local panelName = "castle"
+  local ui = setupUI([[
+Panel
+  height: 40
+
+  BotItem
+    id: item
+    anchors.top: parent.top
+    anchors.left: parent.left
+    margin-top: 2
+    
+  BotSwitch
+    id: skip
+    anchors.top: parent.top
+    anchors.left: item.right
+    anchors.right: parent.right
+    anchors.bottom: item.verticalCenter
+    text-align: center
+    !text: tr('Skip Tiles Near Target')
+    margin-left: 2
+
+  BotSwitch
+    id: title
+    anchors.top: item.verticalCenter
+    anchors.left: item.right
+    anchors.right: parent.right
+    anchors.bottom: item.bottom
+    text-align: center
+    !text: tr('Drop Items Around')
+    margin-left: 2
+      
+  ]], parent)
+  ui:setId(panelName)
+
+  if not storage[panelName] then
+    storage[panelName] = {
+        id = 2983,
+        around = false,
+        enabled = false
+    }
+  end
+
+  ui.skip:setOn(storage[panelName].around)
+  ui.skip.onClick = function(widget)
+    storage[panelName].around = not storage[panelName].around
+    widget:setOn(storage[panelName].around)
+  end
+  ui.title:setOn(storage[panelName].enabled)
+  ui.title.onClick = function(widget)
+    storage[panelName].enabled = not storage[panelName].enabled
+    widget:setOn(storage[panelName].enabled)
+  end
+
+  ui.item:setItemId(storage[panelName].id)
+  ui.item.onItemChange = function(widget)
+    storage[panelName].id = widget:getItemId()
+  end
+
+
+macro(175, function() 
+    if storage[panelName].enabled then
+        local blockItem = findItem(storage[panelName].id)
+        for _, tile in pairs(g_map.getTiles(posz())) do
+            if distanceFromPlayer(tile:getPosition()) == 1 and tile:isWalkable() and tile:getTopUseThing():getId() ~= storage[panelName].id and (not storage[panelName].around or not target() or (target() and getDistanceBetween(targetPos(), tile:getPosition() > 1))) then
+                g_game.move(blockItem, tile:getPosition())
+                return
+            end
+        end
+        storage[panelName].enabled = false
+        ui.title:setOn(storage[panelName].enabled)
+    end
+end)
+addSeparator()
+
+--------- AGARRAR FLORES
+
+config = {
+    itemsToPickUp = {2981, 2983, 2984, 2985, 2988},
+    rangeToCheck = 1
+}
+ 
+itemQueue = {} 
+ 
+pckFlow = macro(300, "AGARRAR FLORES", function(self)
+    for dx = -config.rangeToCheck, config.rangeToCheck do
+        for dy = -config.rangeToCheck, config.rangeToCheck do
+            local currentTile = g_map.getTile({x = posx() + dx, y = posy() + dy, z = posz()})
+            if currentTile then
+                local itemsOnTile = currentTile:getThings()
+                for _, item in pairs(itemsOnTile) do
+                    if table.find(config.itemsToPickUp, item:getId()) then
+                        table.insert(itemQueue, item)
+                    end
+                end
+            end
+        end
+    end
+ 
+    while #itemQueue > 0 do
+        local item = table.remove(itemQueue, 1)
+        local containers = getContainers()
+        for _, container in pairs(containers) do
+            g_game.move(item, container:getSlotPosition(container:getItemsCount()), item:getCount())
+        end
+    end
+self.setOn(false)
+end)
+
+UI.Separator()
+-- Establece la pestaÃ±a por defecto en "spells"
+setDefaultTab("PVP")
+
+-- Crea una etiqueta de UI con el texto 
+local name = UI.Label("MAGIC WALLS")
+
+-- Define una macro que se ejecuta cada 800 milisegundos
+macro(800, function()
+  local rainbowDelay = 0 -- Inicializa el retraso del arco iris
+
+  -- Itera sobre una lista de colores
+  for k, color in ipairs({"#00bfff", "#0099cc"}) do
+    -- Programa una funciÃ³n que cambia el color de la etiqueta despuÃ©s de un retraso
+    schedule(rainbowDelay, function()
+      name:setColor(color) -- Establece el color de la etiqueta
+    end)
+
+    -- Incrementa el retraso para el prÃ³ximo color
+    rainbowDelay = rainbowDelay + 300 -- Tiempo entre colores
+  end
+end, PVPTab)
+UI.Separator()
+
+local toggle = macro(10, "Mwall Step", "F11",function() end) -- taca mw no sqm anterior
+
+onPlayerPositionChange(function(newPos, oldPos)
+    if oldPos.z ~= posz() then return end
+    if oldPos then
+        local tile = g_map.getTile(oldPos)
+        if toggle.isOn() and tile:isWalkable() then
+            useWith(3180, tile:getTopUseThing())
+            toggle.setOff()
+        end
+    end
+end)
+
+local toggle2 = macro(10, "MW Target Step", "F12", function() end) -- taca mw no sqm onde o alvo esta
+
+onCreaturePositionChange(function(creature, newPos, oldPos)
+    if creature == target() or creature == g_game.getFollowingCreature() then
+        if oldPos and oldPos.z == posz() then
+            local tile2 = g_map.getTile(oldPos)
+            if toggle2.isOn() and tile2:isWalkable() then
+                useWith(3180, tile2:getTopUseThing())
+                toggle2.setOff()
+            end 
+        end
+    end
+end)
+
+
+UI.Separator()
+mwmouse = "hotkeynamw"
+if not storage[mwmouse] then
+ storage[mwmouse] = { key = 'F10'}
+end
+UI.Label("Hotkey MW no mouse: ")
+UI.TextEdit(storage[mwmouse].key or "F10", function(widget, newText)
+    storage[mwmouse].key = newText
+end)
+onKeyUp(function(keys)
+ if (keys ~= storage[mwmouse].key) then return end
+ local tile = getTileUnderCursor();
+ if (not tile) then return; end
+ local pos = tile:getPosition();
+ useWith(3180, tile:getTopUseThing())
+end)
+UI.Separator()
+
+mwfrente = "hotkeymwf"
+if not storage[mwfrente] then
+ storage[mwfrente] = { hkf = ''}
+end
+UI.Label("Hotkey MW Frente Target:")
+UI.TextEdit(storage[mwfrente].hkf, function(widget, newText)
+    storage[mwfrente].hkf = newText
+end)
+
+local mwallId = 3180 -- Mwall ID
+local squaresThreshold = 2 -- quantidade de sqm a tacar MW frente do char
+onKeyUp(function(keys)
+if (keys ~= storage[mwfrente].hkf) then return end
+local target = g_game.getAttackingCreature() or g_game.getFollowingCreature()
+      if target then
+      local targetPos = target:getPosition()
+      local targetDir = target:getDirection()
+      local mwallTile
+      if targetDir == 0 then -- north
+        targetPos.y = targetPos.y - squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      elseif targetDir == 1 then -- east
+        targetPos.x = targetPos.x + squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      elseif targetDir == 2 then -- south
+        targetPos.y = targetPos.y + squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      elseif targetDir == 3 then -- west
+        targetPos.x = targetPos.x - squaresThreshold
+        mwallTile = g_map.getTile(targetPos)
+        useWith(mwallId, mwallTile:getTopUseThing())
+      end
+   end
+end)
+UI.Separator()
+
+-- mais rÃ¡pido do que os convencionais que usam onKeyPress()
+local function checkPos(x, y)
+ xyz = g_game.getLocalPlayer():getPosition()
+ xyz.x = xyz.x + x
+ xyz.y = xyz.y + y
+ tile = g_map.getTile(xyz)
+ if tile then
+  return g_game.use(tile:getTopUseThing())  
+ else
+  return false
+ end
+end
+ 
+ 
+local bugMap = macro(70, "Bug Maps - WASD", function() 
+ if modules.corelib.g_keyboard.isKeyPressed('w') then
+  checkPos(0, -5)
+ elseif modules.corelib.g_keyboard.isKeyPressed('e') then
+  checkPos(3, -3)
+ elseif modules.corelib.g_keyboard.isKeyPressed('d') then
+  checkPos(5, 0)
+ elseif modules.corelib.g_keyboard.isKeyPressed('c') then
+  checkPos(3, 3)
+ elseif modules.corelib.g_keyboard.isKeyPressed('s') then
+  checkPos(0, 5)
+ elseif modules.corelib.g_keyboard.isKeyPressed('z') then
+  checkPos(-3, 3)
+ elseif modules.corelib.g_keyboard.isKeyPressed('a') then
+  checkPos(-5, 0)
+ elseif modules.corelib.g_keyboard.isKeyPressed('q') then
+  checkPos(-3, -3)
+ end
+end)
+local bugMap = addIcon("bugMap", {item =37610, text = "BugMap"}, bugMap )
+--By spychal435
+
+g_ui.loadUIFromString([[
+DashWindow < MainWindow
+  !text: tr('Dash Configuration')
+  size: 280 240
+  padding: 15
+  @onEscape: self:hide()
+
+  Label
+    id: titleLabel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    text-align: center
+    text: Select keyboard layout for dash:
+
+  Panel
+    id: wsadPanel
+    height: 20
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 15
+    
+    CheckBox
+      id: wsadCheck
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+    
+    Label
+      id: wsadLabel
+      anchors.left: prev.right
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 5
+      text: WSAD Layout (QWEASDZC)
+
+  Panel
+    id: arrowsPanel
+    height: 20
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 5
+    
+    CheckBox
+      id: arrowsCheck
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+    
+    Label
+      id: arrowsLabel
+      anchors.left: prev.right
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 5
+      text: Arrow Keys + Numpad
+
+  Panel
+    id: numpadPanel
+    height: 20
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 5
+    
+    CheckBox
+      id: numpadCheck
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+    
+    Label
+      id: numpadLabel
+      anchors.left: prev.right
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 5
+      text: Numpad Only
+
+  HorizontalSeparator
+    id: separator1
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 10
+
+  Panel
+    id: speedPanel
+    height: 30
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 10
+    
+    Label
+      id: speedLabel
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+      text: Dash Speed (ms):
+    
+    TextEdit
+      id: speedInput
+      anchors.left: prev.right
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 10
+      text-align: center
+
+  HorizontalSeparator
+    id: separator2
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 10
+
+  Button
+    id: saveButton
+    !text: tr('Save')
+    anchors.bottom: parent.bottom
+    anchors.right: closeButton.left
+    margin-right: 10
+    width: 45
+    height: 21
+
+  Button
+    id: closeButton
+    !text: tr('Close')
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    width: 45
+    height: 21
+]])
+
+if not storage.dashConfig then
+  storage.dashConfig = {
+    enabled = true,
+    layout = "wsad",
+    speed = 5
+  }
+end
+
+local config = storage.dashConfig
+
+local function syncCheckboxes(window, selected)
+  if selected == "wsad" then
+    window.wsadPanel.wsadCheck:setChecked(true)
+    window.arrowsPanel.arrowsCheck:setChecked(false)
+    window.numpadPanel.numpadCheck:setChecked(false)
+    config.layout = "wsad"
+  elseif selected == "arrows" then
+    window.wsadPanel.wsadCheck:setChecked(false)
+    window.arrowsPanel.arrowsCheck:setChecked(true)
+    window.numpadPanel.numpadCheck:setChecked(false)
+    config.layout = "arrows"
+  elseif selected == "numpad" then
+    window.wsadPanel.wsadCheck:setChecked(false)
+    window.arrowsPanel.arrowsCheck:setChecked(false)
+    window.numpadPanel.numpadCheck:setChecked(true)
+    config.layout = "numpad"
+  end
+end
+
+local dashWindow = nil
+
+local function showDashSettings()
+  if dashWindow then
+    dashWindow:destroy()
+    dashWindow = nil
+  end
+  
+  dashWindow = g_ui.createWidget('DashWindow', rootWidget)
+  
+  dashWindow.speedPanel.speedInput:setText(tostring(config.speed))
+  
+  syncCheckboxes(dashWindow, config.layout)
+  
+  dashWindow.wsadPanel.wsadCheck.onClick = function()
+    syncCheckboxes(dashWindow, "wsad")
+  end
+  
+  dashWindow.arrowsPanel.arrowsCheck.onClick = function()
+    syncCheckboxes(dashWindow, "arrows")
+  end
+  
+  dashWindow.numpadPanel.numpadCheck.onClick = function()
+    syncCheckboxes(dashWindow, "numpad")
+  end
+
+  dashWindow.wsadPanel.wsadLabel.onClick = function()
+    dashWindow.wsadPanel.wsadCheck:setChecked(true)
+    syncCheckboxes(dashWindow, "wsad")
+  end
+  
+  dashWindow.arrowsPanel.arrowsLabel.onClick = function()
+    dashWindow.arrowsPanel.arrowsCheck:setChecked(true)
+    syncCheckboxes(dashWindow, "arrows")
+  end
+  
+  dashWindow.numpadPanel.numpadLabel.onClick = function()
+    dashWindow.numpadPanel.numpadCheck:setChecked(true)
+    syncCheckboxes(dashWindow, "numpad")
+  end
+  
+  dashWindow.saveButton.onClick = function()
+    local newSpeed = tonumber(dashWindow.speedPanel.speedInput:getText())
+    if newSpeed and newSpeed > 0 then
+      config.speed = newSpeed
+    end
+    
+    modules.game_textmessage.displayGameMessage("Dash settings saved.")
+    dashWindow:destroy()
+    dashWindow = nil
+  end
+  
+  dashWindow.closeButton.onClick = function()
+    dashWindow:destroy()
+    dashWindow = nil
+  end
+  
+  dashWindow:show()
+  dashWindow:raise()
+  dashWindow:focus()
+end
+
+DashMacro = macro(config.speed, function()
+  if config.layout == "wsad" then
+    if g_keyboard.isKeyPressed('W') then
+      g_game.walk(0)
+    elseif g_keyboard.isKeyPressed('E') then
+      g_game.walk(4)
+    elseif g_keyboard.isKeyPressed('D') then
+      g_game.walk(1)
+    elseif g_keyboard.isKeyPressed('C') then
+      g_game.walk(5)
+    elseif g_keyboard.isKeyPressed('S') then
+      g_game.walk(2)
+    elseif g_keyboard.isKeyPressed('Z') then
+      g_game.walk(6)
+    elseif g_keyboard.isKeyPressed('A') then
+      g_game.walk(3)
+    elseif g_keyboard.isKeyPressed('Q') then
+      g_game.walk(7)
+    end
+  elseif config.layout == "arrows" then
+    if g_keyboard.isKeyPressed("Up") then
+      g_game.walk(0)
+    elseif g_keyboard.isKeyPressed("NumPad9") then
+      g_game.walk(4)
+    elseif g_keyboard.isKeyPressed("Right") then
+      g_game.walk(1)
+    elseif g_keyboard.isKeyPressed("NumPad3") then
+      g_game.walk(5)
+    elseif g_keyboard.isKeyPressed("Down") then
+      g_game.walk(2)
+    elseif g_keyboard.isKeyPressed("NumPad1") then
+      g_game.walk(6)
+    elseif g_keyboard.isKeyPressed("Left") then
+      g_game.walk(3)
+    elseif g_keyboard.isKeyPressed("NumPad7") then
+      g_game.walk(7)
+    end
+  elseif config.layout == "numpad" then
+    if g_keyboard.isKeyPressed("NumPad8") then
+      g_game.walk(0)
+    elseif g_keyboard.isKeyPressed("NumPad9") then
+      g_game.walk(4)
+    elseif g_keyboard.isKeyPressed("NumPad6") then
+      g_game.walk(1)
+    elseif g_keyboard.isKeyPressed("NumPad3") then
+      g_game.walk(5)
+    elseif g_keyboard.isKeyPressed("NumPad2") then
+      g_game.walk(2)
+    elseif g_keyboard.isKeyPressed("NumPad1") then
+      g_game.walk(6)
+    elseif g_keyboard.isKeyPressed("NumPad4") then
+      g_game.walk(3)
+    elseif g_keyboard.isKeyPressed("NumPad7") then
+      g_game.walk(7)
+    end
+  end
+end)
+
+setDefaultTab("PVP")
+
+local icon = addIcon("DashIcon", {
+  item = {id = 24409, count = 1},
+  text = "Dash"
+}, DashMacro)
+
+icon.onMousePress = function(widget, mousePos, mouseButton)
+  if mouseButton == 2 then
+    showDashSettings()
+    return true
+  end
+  return false
+end
+
+modules.game_textmessage.displayGameMessage("Dash loaded. Right-click icon to configure.")
+
+UI.Separator()
+setDefaultTab("PVP")
+
+-- Crea una etiqueta de UI con el texto 
+local name = UI.Label("EXIVA LAST")
+
+-- Define una macro que se ejecuta cada 800 milisegundos
+macro(800, function()
+  local rainbowDelay = 0 -- Inicializa el retraso del arco iris
+
+  -- Itera sobre una lista de colores
+  for k, color in ipairs({"#00bfff", "#0099cc"}) do
+    -- Programa una funciÃ³n que cambia el color de la etiqueta despuÃ©s de un retraso
+    schedule(rainbowDelay, function()
+      name:setColor(color) -- Establece el color de la etiqueta
+    end)
+
+    -- Incrementa el retraso para el prÃ³ximo color
+    rainbowDelay = rainbowDelay + 300 -- Tiempo entre colores
+  end
+end, PVPTab)
+UI.Separator()
+local configName = modules.game_bot.contentsPanel.config:getCurrentOption().text
+local pathBot = "/bot/" .. configName .. "/"
+
+local widgetArrow = setupUI([[
+UIWidget
+  height: 64
+  width: 64
+  anchors.centerIn: parent
+  visible: false
+]], modules.game_interface.getMapPanel())
+
+if not storage["exiva/senseAdvanced"] then
+  storage["exiva/senseAdvanced"] = {
+    Spell = "exiva",
+    LastTargetKey = "t",
+    LastSenseKey = "v",
+    LastSensedPlayer = nil
+  }
+end
+
+local config = storage["exiva/senseAdvanced"]
+
+UI.Label("Spell")
+UI.TextEdit(config.Spell or "exiva", function(widget, text)
+    config.Spell = text
+end)
+UI.Separator()
+
+UI.Label("Tecla para ultimo target")
+UI.TextEdit(config.LastTargetKey or "t", function(widget, text)
+    config.LastTargetKey = text
+end)
+UI.Separator()
+
+UI.Label("Tecla para ultimo sense/exiva")
+UI.TextEdit(config.LastSenseKey or "v", function(widget, text)
+    config.LastSenseKey = text
+end)
+UI.Separator()
+
+local positions = {
+    west = {marginLeft = -80, marginTop = 0, rotation = 270},
+    east = {marginLeft = 80, marginTop = 0, rotation = 90},
+    north = {marginLeft = 0, marginTop = -80, rotation = 0},
+    south = {marginLeft = 0, marginTop = 80, rotation = 180},
+    ["north-west"] = {marginLeft = -80, marginTop = -80, rotation = 315},
+    ["north-east"] = {marginLeft = 80, marginTop = -80, rotation = 45},
+    ["south-west"] = {marginLeft = -80, marginTop = 80, rotation = 225},
+    ["south-east"] = {marginLeft = 80, marginTop = 80, rotation = 135}
+}
+
+local function showArrow(direction)
+    local pos = positions[direction]
+    if pos then
+        widgetArrow:setVisible(true)
+        widgetArrow:setRotation(pos.rotation)
+        widgetArrow:setMarginLeft(pos.marginLeft)
+        widgetArrow:setMarginTop(pos.marginTop)
+        widgetArrow:show()
+        if evento and type(evento) == "number" then
+            removeEvent(evento)
+        end
+        modules.corelib.g_effects.fadeIn(widgetArrow)
+        evento = modules.corelib.scheduleEvent(function ()
+            modules.corelib.g_effects.fadeOut(widgetArrow)
+            evento = nil
+        end, 1800)
+    end
+end
+
+onTextMessage(function(mode, text)
+    if mode == 20 then
+        local player = text:match('^(.-) is very .- to the [a-z-]+%.')
+        if player then
+            config.LastSensedPlayer = player:trim()
+        end
+        showArrow(text:match("is .- to the ([a-z-]+)%.") or text:match("is to the ([a-z-]+)%."))
+    end
+end)
+
+onKeyPress(function(keys)
+    if not modules.corelib.g_app.isMobile() and modules.game_console:isChatEnabled() then
+        modules.game_textmessage.displayGameMessage('Desactive o chat para usar el Script de exiva/sense con las teclas.')
+        return
+    end
+
+    keys = keys:lower()
+
+    if keys == config.LastTargetKey:lower() then
+        if Player and type(Player) == "string" then
+            say(config.Spell .. ' "' .. Player .. '"')
+            config.LastSensedPlayer = Player
+        else
+            modules.game_textmessage.displayGameMessage("No hay ningun ultimo Target almacenado.")
+        end
+    elseif keys == config.LastSenseKey:lower() then
+        if config.LastSensedPlayer and type(config.LastSensedPlayer) == "string" then
+            say(config.Spell .. ' "' .. config.LastSensedPlayer .. '"')
+        else
+            modules.game_textmessage.displayGameMessage("No hay ningun ultimo Sense/Exiva almacenado.")
+        end
+    end
+end)
+
+macro(1500, "Exiva Target", function()
+    if Player and type(Player) == "string" then
+        local targetVisible = false
+        for _, spectator in ipairs(getSpectators()) do
+            if spectator:getName() == Player then
+                targetVisible = true
+                break
+            end
+        end
+        if not targetVisible then
+            say(config.Spell .. ' "' .. Player .. '"')
+            config.LastSensedPlayer = Player
+        end
+    end
+end)
+
+macro(1, function()
+    if g_game.isAttacking() and g_game.getAttackingCreature():isPlayer() then
+        Player = g_game.getAttackingCreature():getName()
+        config.LastSensedPlayer = Player
+    end
+end)
+
+macro(1, 'Exiva', function()
+    if config.Spell and config.LastSensedPlayer and type(config.LastSensedPlayer) == "string" then
+        local locatePlayer = getPlayerByName(config.LastSensedPlayer)
+        if not (locatePlayer and locatePlayer:getPosition().z == player:getPosition().z and getDistanceBetween(pos(), locatePlayer:getPosition()) <= 8) then
+            say(config.Spell .. ' "' .. config.LastSensedPlayer .. '"')
+            delay(3000)
+        end
+    end
+end)
+
+if not g_resources.fileExists(pathBot .. "/arrow.png") then
+    HTTP.get("https://i.imgur.com/UCpAD89.png", function(data, err)
+        if not err then
+            g_resources.writeFileContents(pathBot .. "/arrow.png", data)
+            widgetArrow:setImageSource(pathBot .. "/arrow.png")
+        end
+    end)
+else
+    widgetArrow:setImageSource(pathBot .. "/arrow.png")
+end
+
+
+setDefaultTab("EXTRA")
+
+UI.Separator()
+
+storage.followLeader = storage.followLeader or "Quentin"
+FollowMacro = macro(1231321321, "Follow: ExaniTera", function() end)
+addTextEdit("playerToFollow", storage.followLeader, function(widget, text) 
+    storage.followLeader = text 
+end)
+
+onCreaturePositionChange(function(creature, newPos, oldPos)
+    if FollowMacro:isOff() then return end
+    if newPos and oldPos and creature:getName() == player:getName() and getCreatureByName(storage.followLeader) == nil and newPos.z > oldPos.z then
+        say('exani tera')
+        for i = -1, 1 do
+            for j = -1, 1 do
+                local useTile = g_map.getTile({ x = posx() + i, y = posy() + j, z = posz() })
+                if useTile ~= nil then  -- Verifica que useTile no sea nil
+                    g_game.use(useTile:getTopUseThing())
+                end
+            end
+        end
+    end
+
+    if creature:getName() == storage.followLeader then
+        if not newPos then
+            if oldPos then
+                lastPos = oldPos
+                schedule(200, function() autoWalk(oldPos) end)
+            end
+            schedule(1000, function() 
+                for i = -1, 1 do
+                    for j = -1, 1 do
+                        local useTile = g_map.getTile({ x = posx() + i, y = posy() + j, z = posz() })
+                        if useTile ~= nil then  -- Verifica que useTile no sea nil
+                            local top = useTile:getTopUseThing()
+                            if top then
+                                g_game.use(top)
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+
+        if not newPos or not oldPos then return end
+        if oldPos.z == newPos.z then
+            schedule(300, function() 
+                local useTile = g_map.getTile({ x = oldPos.x, y = oldPos.y, z = oldPos.z })
+                if useTile ~= nil then  -- Verifica que useTile no sea nil
+                    local topThing = useTile:getTopThing()
+                    if not useTile:isWalkable() then
+                        g_game.use(topThing)
+                    end
+                end
+            end)
+            autoWalk({ x = oldPos.x, y = oldPos.y, z = oldPos.z })
+        else
+            lastPos = oldPos
+            autoWalk(oldPos)
+            for i = 1, 6 do
+                schedule(i * 200, function() 
+                    autoWalk(oldPos)
+                    if getDistanceBetween(pos(), oldPos) == 0 and (posz() > newPos.z and getCreatureByName(storage.followLeader) == nil) then
+                        say('exani tera')
+                    end
+                end)
+            end
+            local useTile = g_map.getTile({ x = newPos.x, y = newPos.y - 1, z = oldPos.z })
+            if useTile ~= nil then  -- Verifica que useTile no sea nil
+                g_game.use(useTile:getTopUseThing())
+            end
+        end
+    end
+end)
+UI.Separator()
+PvpAttackLeader = {}
+local toAttack = nil
+onMissle(function(missle)
+    if not storage.attackLeader or storage.attackLeader:len() == 0 then
+        return
+    end
+    local src = missle:getSource()
+    if src.z ~= posz() then return end
+    local from = g_map.getTile(src)
+    local to = g_map.getTile(missle:getDestination())
+    if not from or not to then return end
+    local fromCreatures = from:getCreatures()
+    local toCreatures = to:getCreatures()
+    if #fromCreatures ~= 1 or #toCreatures ~= 1 then return end
+    local c1 = fromCreatures[1]
+    if c1:getName():lower() == storage.attackLeader:lower() then
+        toAttack = toCreatures[1]
+    end
+end)
+ 
+PvpAttackLeader.Macro = macro(50, "ATACK LIDER TARGET ", function()
+    if toAttack and storage.attackLeader:len() > 0 and toAttack ~=
+        g_game.getAttackingCreature() then
+        g_game.attack(toAttack)
+        toAttack = nil
+    end
+end)
+ 
+PvpAttackLeader.editAttackLeader = UI.TextEdit(
+                                       storage.attackLeader or "Leader Name",
+                                       function(widget, newText)
+        storage.attackLeader = newText
+    end)
+ 
+PvpAttackLeader.setLeader = (function(leader)
+    storage.attackLeader = leader
+    PvpAttackLeader.editAttackLeader:setText(leader)
+end)
+ 
+PvpAttackLeader.setEnabled = (function(enabled)
+    if enabled then
+        PvpAttackLeader.Macro:setOn();
+    else
+        PvpAttackLeader.Macro:setOff();
+    end
+end)
+ 
+UI.Separator()
+UI.Label("COMBO SPELL"):setColor("black")
+UI.Separator()
+local comboOptions = {
+  leader = storage.gpSpellComboLeader or "",
+  trigger = storage.gpSpellComboTrigger or "",
+  spell = storage.gpSpellComboSpell or "exevo gran mas vis",
+}
+ 
+addLabel("leaderLabel", "Leader Player Name: ", comboTab)
+addTextEdit("leaderValue", comboOptions.leader, function(widget, text)
+  comboOptions.leader = text
+  storage.gpSpellComboLeader = text
+end, comboTab)
+ 
+addLabel("triggerLabel", "Palabra Clave: ", comboTab)
+addTextEdit("triggerValue", comboOptions.trigger, function(widget, text)
+  comboOptions.trigger = text
+  storage.gpSpellComboTrigger = text
+end, comboTab)
+ 
+addLabel("spellLabel", "Spell Combo:", comboTab)
+addTextEdit("spellValue", comboOptions.spell, function(widget, text)
+  comboOptions.spell = text
+  storage.gpSpellComboSpell = text
+end, comboTab)
+ 
+onTalk(function(name, level, mode, text, channelId, pos)
+  if not comboOptions.trigger then
+    return
+  end
+
+ 
+  if name and name:lower() == comboOptions.leader:lower() then
+    if text == comboOptions.trigger then
+      say(comboOptions.spell)
+    end
+  end
+end)
+
+setDefaultTab("VIEW")
+UI.Separator()
+if storage.ShowIcons == nil then
+  storage.ShowIcons = true
+end
+
+function toggleIcons()
+  for i, child in ipairs(modules.game_interface.getMapPanel():getChildren()) do
+    if child:getStyleName() == "BotIcon" then
+      if storage.ShowIcons then
+        child:show() 
+      else
+        child:hide()
+      end
+    end
+  end
+end
+
+schedule(100, function()
+  toggleIcons(storage.ShowIcons)
+end)
+
+addButton("", "ON / OFF Iconos", function()
+  storage.ShowIcons = not storage.ShowIcons
+  toggleIcons()
+end)
+
+UI.Separator()
+
+TH = macro(1500, "Ocultar Letras Naranja", function() end)
+onStaticText(function(thing, text)
+    if TH.isOff() then return end
+    if not text:find('says:') then
+        g_map.cleanTexts()
+    end
+end)
+ 
+--[[esconder MAGIAS(SPRITES)]]--
+sprh = macro(1300, "Ocultar Sprites", function() end)
+onAddThing(function(tile, thing)
+    if sprh.isOff() then return end
+    if thing:isEffect() then
+        thing:hide()
+    end
+end)
+UI.Separator()
+onPlayerPositionChange(function(pos)
+    if storage.limitFloor then
+        local gameMapPanel = modules.game_interface.getMapPanel()
+        if gameMapPanel then gameMapPanel:lockVisibleFloor(pos.z) end
+    end
+end)
+local switch = addSwitch("limitFloor", "Ocultar techos",
+                         function(widget)
+    widget:setOn(not widget:isOn())
+    storage.limitFloor = widget:isOn()
+    local gameMapPanel = modules.game_interface.getMapPanel()
+    if gameMapPanel then
+        if storage.limitFloor then
+            gameMapPanel:lockVisibleFloor(posz())
+        else
+            gameMapPanel:unlockVisibleFloor()
+        end
+    end
+end)
+
+UI.Separator()
+local function assertCondition(creature, condition)
+    local  conditionsTable = {
+        ["Player"] = creature:isPlayer(),
+        ["All"] = true
+    }
+    return conditionsTable[condition]
+end
+
+local conditions = {"Player", "All"}
+for _, condition in ipairs(conditions) do
+    addButton("","Hide "..condition, function()
+        for _, s in ipairs(getSpectators(posz())) do
+            if s and assertCondition(s,condition) then
+                s:hide()
+            end
+        end
+    end)
+    
+    addButton("","Show "..condition, function()
+        for _, s in ipairs(getSpectators(posz())) do
+            if s and assertCondition(s,condition) then
+                s:show()
+            end
+        end
+    end)
+    if _ ~= #conditions then
+        addSeparator()
+    end
+end
+UI.Separator()
+UI.Button("Zoom In map [ctrl + =]", function() zoomIn() end)
+
+UI.Button("Zoom Out map [ctrl + -]", function() zoomOut() end)
+
+setDefaultTab("Macro")
+
+Pally_PvP = macro(500, "CON - GRAN CON", function()
+  if g_game.isAttacking() then
+   say("exori gran con", 700)   
+   delay(1000)
+   say("exori con", 1000)   
+  end
+end)
+Pally_PvP = addIcon("test", {item =25759, text = "Gran / Con"}, Pally_PvP)
+
+local PvPx = addIcon("onetwo", {item =37337, text = "PVP"}, function(icon, isOn)
+    return g_game.setSafeFight(not isOn) 
+end)
+
+local bombs = { 3192 } -- IDs das bombas
+local fireId = { 2118, 2122, 105, 2123, 2124, 2121, 2126, 2119 } -- ID do fogo
+local flowerId = { 2981, 2983, 2984, 2985 } -- ID da flor
+local destroy = 3148
+
+local myMacro = addIcon("bomb", { item = { id = 2118 }, movable = true, text = "FIRE"}, macro(50, "FIRE BOMB", function()
+
+  local main_delay = g_game.getPing() / 2
+  local playerPos = player:getPosition() -- PosiÃƒÂ§ÃƒÂ£o do personagem
+  local tilesAround = getNearTiles(playerPos) -- Tiles ao redor do personagem
+
+  if isInPz() then return end -- Checa se estÃƒÂ¡ no pz e retorna
+
+  for _, bombId in ipairs(bombs) do
+  
+    local bomb = findItem(bombId)
+
+    if bomb then
+      for i = 1, #tilesAround do
+        local tile_around = tilesAround[i]
+
+        if tile_around:getTopUseThing() and not table.find(fireId, tile_around:getTopUseThing():getId()) and not table.find(flowerId, tile_around:getTopUseThing():getId()) and tile_around:isWalkable() then
+          useWith(bomb, player)
+          return
+        end
+      end
+    end
+  end
+end))
+UI.Separator()
+
+macro(50, "FOLLOW MOUSE - BugMap", function(m)
+    --md 
+    local tile = getTileUnderCursor()
+    if not tile then return end
+    if tile:getTopThing() == g_game.getLocalPlayer() then  
+        return m.setOff()
+    end
+    g_game.use(tile:getTopUseThing())
+end)
+
+UI.Separator()
+
+local fTrgt = macro(250, "FOLLOW TARGET", function()
+   if g_game.isOnline() and g_game.isAttacking() then
+         g_game.setChaseMode(1)
+           end
+   end)
+fTrgt = addIcon("testftgt", {item =16201, text = "Trget FOLOW"}, fTrgt)
+ 
+local oldTarget = macro(400, "HOLD TARGET", nil, function()
+  if g_game.isAttacking() then
+    oldTarget = g_game.getAttackingCreature()
+  end
+  if (oldTarget and oldTarget:getPosition()) then
+    if (not g_game.isAttacking() and getDistanceBetween(pos(), oldTarget:getPosition()) <= 8) then
+      if (oldTarget:getPosition().z == posz()) then
+        g_game.attack(oldTarget)
+      end
+    end
+ end
+end)
+ 
+oldTarget = addIcon("oldTtarget", {item =2026, text = "Trget HOLD"}, oldTarget )
+
+UI.Separator()
+local vocation
+ 
+local voc_data = { knight = "eq", paladin = "sac", sorcerer = "ven", druid = "dru", }
+ 
+local m = macro(1000, "AUTO SUMMON", function ()
+    if isInPz() then return end
+    if not vocation then
+        g_game.look(player)
+        return
+    end
+    say("utevo gran res " .. voc_data[vocation])
+    delay(10000)
+end)
+ 
+ 
+onTextMessage(function(mode, text)
+    if m:isOff() or not text:find("You see yourself") then return end
+    local re = regexMatch(text, "(knight|sorcerer|druid|paladin)")
+    if #re ~= 0 then
+        vocation = re[1][1]
+    end
+    modules.game_textmessage.clearMessages()
+  end)
+local m = addIcon("sumVoc", {item= 8175,  text="SUMON"}, m)
+
+
+local talkToOberon = macro(1, 'OBERON', function() end)
+
+  onTalk(function(name, level, mode, text, channelId, pos)
+    if talkToOberon.isOff() then return end
+    if mode == 34 then
+        if string.find(text, "world will suffer for") then
+            say("Are you ever going to fight or do you prefer talking!")
+        elseif string.find(text, "feet when they see me") then
+            say("Even before they smell your breath?")
+        elseif string.find(text, "from this plane") then
+            say("Too bad you barely exist at all!") 
+        elseif string.find(text, "ESDO LO") then
+            say("SEHWO ASIMO, TOLIDO ESD!") 
+        elseif string.find(text, "will soon rule this world") then
+            say("Excuse me but I still do not get the message!") 
+        elseif string.find(text, "honourable and formidable") then
+            say("Then why are we fighting alone right now?") 
+        elseif string.find(text, "appear like a worm") then
+            say("How appropriate, you look like something worms already got the better of!") 
+        elseif string.find(text, "will be the end of mortal") then
+            say("Then let me show you the concept of mortality before it!") 
+        elseif string.find(text, "The true virtue of chivalry are my belief!") then
+            say("Dare strike up a Minnesang and you will receive your last accolade!") 
+        end
+    end
+  end)
+
+UI.Separator()
+UI.Label("AUTO PICK ITEMS"):setColor("white")
+UI.Separator()
+-- Verifica si storage.pickUp no es una tabla, si no lo es, asigna una tabla con valores predeterminados
+if type(storage.pickUp) ~= "table" then
+  storage.pickUp = {3725, 3723}
+end
+
+-- Verifica si storage.containerpickUp no es una tabla, si no lo es, asigna una tabla con valores predeterminados
+if type(storage.containerpickUp) ~= "table" then
+  storage.containerpickUp = {5926}
+end
+
+-- Crea un contenedor para los items a recolectar
+local pickUpContainer = UI.Container(function(widget, items)
+  storage.pickUp = items
+end, true)
+pickUpContainer:setHeight(54)
+pickUpContainer:setItems(storage.pickUp)
+
+-- Cantidad de SQM alrededor del personaje que va a chequear
+local CheckPOS = 1
+
+UI.Label("Item / Backpack")
+
+-- Crea un contenedor para los containers donde se guardarÃƒÂ¡n los items recolectados
+local containerpickUpContainer = UI.Container(function(widget, items)
+  storage.containerpickUp = items
+end, true)
+containerpickUpContainer:setHeight(54)
+containerpickUpContainer:setItems(storage.containerpickUp)
+-- Macro para recolectar items del suelo cada 20 milisegundos
+macro(200, "PICK ITEMS", "", function()
+  if not storage.pickUp[1] then return end
+  for x = -CheckPOS, CheckPOS do
+    for y = -CheckPOS, CheckPOS do
+      local tile = g_map.getTile({x = posx() + x, y = posy() + y, z = posz()})
+      if tile then
+        local things = tile:getThings()
+        for a, item in pairs(things) do
+          for c, recolectar in pairs(storage.pickUp) do
+            if table.find(recolectar, item:getId()) then
+              local containers = getContainers()
+              for _, container in pairs(containers) do            
+                for g, guardar in pairs(storage.containerpickUp) do
+                  if table.find(guardar, container:getContainerItem():getId()) then
+                    g_game.move(item, container:getSlotPosition(container:getItemsCount()), item:getCount())                
+                  end  
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end)
+UI.Separator()
+if not storage.doorIds then
+    storage.doorIds = { 5129, 5102, 5111, 5120, 11246 }
+end
+
+local moveTime = 2000
+local moveDist = 2
+local useTime = 2000
+local useDistance = 2
+
+local function properTable(t)
+    local r = {}
+    for _, entry in pairs(t) do
+        table.insert(r, entry.id)
+    end
+    return r
+end
+
+UI.Separator()
+UI.Label("AUTO OPEN DOORS"):setColor("white")
+
+local doorContainer = UI.Container(function(widget, items)
+    storage.doorIds = items
+    doorId = properTable(storage.doorIds)
+end, true)
+
+doorContainer:setHeight(35)
+doorContainer:setItems(storage.doorIds)
+doorId = properTable(storage.doorIds)
+
+clickDoor = macro(1000, "OPEN DOORS", function()
+    for i, tile in ipairs(g_map.getTiles(posz())) do
+        local item = tile:getTopUseThing()
+        if item and table.find(doorId, item:getId()) then
+            local tPos = tile:getPosition()
+            local distance = getDistanceBetween(pos(), tPos)
+            if (distance <= useDistance) then
+                use(item)
+                return delay(useTime)
+            end
+
+            if (distance <= moveDist and distance > useDistance) then
+                if findPath(pos(), tPos, moveDist, { ignoreNonPathable = true, precision = 1 }) then
+                    autoWalk(tPos, moveTime, { ignoreNonPathable = true, precision = 1 })
+                    return delay(waitTime)
+                end
+            end
+        end
+    end
+end)
+----------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------
+--
+warning = function() 
+    return  
+end
+--
+
+local gamePanel = modules.game_interface.gameMapPanel
+
+gamePanel.onMouseWheel = function(widget, mousePos, scroll)
+  if scroll == 1 then --scroll up
+    say("exani hur up")
+  elseif scroll == 2 then --scroll down
+    say("exani hur down")
+  end
+end
+--
+--- TRAVEL este script se debe asegurar verificando las sintaxis, osea a veces si al hacer custom si da error lo que tienes que hacer es ir al script original en el discor, copiarlo y finalmente pegarlo y posteriormente agregarle las citys nuevas
+
+local NPCsAndCities = {
+  ["Captain Bluebear"] = "Ab'Dendriel, Arcadia, Carlin, Edron, Krailos, Liberty Bay, Oramond, Port Hope,  Rangiroa, Roshamuul, Svargrond, Venore, Yalahar",
+  ["Captain Fearless"] = "Ab'Dendriel, Ankrahmun, Arcadia, Carlin, Darashia, Edron, Gray Island, Issavi, Liberty Bay, Port Hope, Rangiroa, Svargrond, Thais, Yalahar",
+  ["Captain Greyhound"] = "Thais, Ab'dendriel, Venore, Svargrond, Yalahar, Rangiroa, Arcadia, Edron",
+  ["Captain Seahorse"] = "Ab'Dendriel, Ankrahmun, Carlin, Cormaya, Gray Island, Gunther, Liberty Bay, Port Hope, Thais, Venore", 
+  ["Captain Frank"] = "Venore",
+  ["Captain Breezelda"] = "Arcadia, Carlin, Thais, Venore",
+  ["Captain Seagull"] = "Carlin, Edron, Gray Island, Thais, Venore, Yalahar",
+  ["Captain Sinbeard"] = "Darashia, Edron, Liberty Bay, Port Hope, Travora, Venore, Yalahar",
+  ["Captain Grenald"] = "Carlin, Svargrond, Thais, Venore, Yalahar",
+  ["Captain Chelop"] = "Thais",
+  ["Captain Harava"] = "Darashia, Krailos, Oramond, Venore",
+  ["Captain Pelagia"] = "Darashia, Edron, Issavi, Oramond, Venore",
+  ["Captain Gulliver"] = "Edron, Issavi, Krailos, Port Hope, Thais, Venore",
+  ["Captain Jack"] = "Tibia", 
+  ["Karith"] = "Ab'Dendriel, Ankrahmun, Arcadia, Carlin, Darashia, Liberty Bay, Port Hope, Thais, Venore",
+  ["Charles"] = "Ankrahmun, Darashia, Edron, Liberty Bay, Thais, Venore, Yalahar",
+  ["Jack Fate"] = "Ankrahmun, Darashia, Edron, Port Hope, Thais, Venore, Yalahar",
+  ["Scrutinon"] = "Ab'dendriel, Edron, Darashia, Venore",
+  ["Petros"] = "Ankrahmun, Gray Island, Issavi, Liberty Bay, Port Hope, Venore, Yalahar",
+  ["Pemaret"] = "Edron",
+  ["Chemar"] = "Edron, Farmine, Femor Hills, Issavi, Kazordoon, Marapur, Svargrond",
+  ["Tanyt"] = "Darashia, Edron, Farmine, Femor Hills, Kazordoon, Marapur, Svargrond",
+  ["Pino"] = "Darashia, Farmine, Femor Hills, Issavi, Kazordoon, Marapur, Svargrond",
+  ["Uzon"] = "Darashia, Edron, Farmine, Issavi, Kazordoon, Svargrond",
+  ["Gewen"] = "Darashia, Edron, Farmine, Femor Hills, Issavi, Marapur, Svargrond, Weekly Ticket",
+  ["Gurbasch"] = "Farmine, Gnomprona, Kazordoon",
+  ["Brodrosch"] = "Cormaya, Farmine, Gnomprona",
+  ["Thorgrin"] = "Cormaya, Gnomprona, Kazordoon",
+  ["Imbul"] = "Centre, East",
+  ["Lorek"] = "Banuta, Chor, Mountain Pass, West",
+  ["Dalbrect"] = "Passage",
+  ["Nielson"] = "Folda, Senja, Vega",
+  ["Svenson"] = "Senja, Tibia, Vega",
+  ["Carlson"] = "Folda, Senja, Tibia",
+  ["Anderson"] = "Folda, Tibia, Vega",
+  ["Iyad"] = "Edron, Darashia, Farmine, Issavi, Kazordoon, Marapur",
+  ["Buddel"] = "Okolnir, Svargrond, Tyrsung",
+  ["Harlow"] = "Vengoth, Yalahar",
+  ["Melian"] = "Darashia, Edron, Femor Hills, Issavi, Kazordoon, Marapur, Svargrond",
+  ["Urks The Mute"] = "Kazordoon, Cormaya",
+  ["Ziyad"] = "Darashia, Edron, Issavi, Kazordoon, Svargrond"
+}
+
+local TravelWindow = setupUI([[
+UIWindow
+  !text: tr('Travel')
+  color: #99d6ff
+  font: sans-bold-16px  
+  background-color: black
+  opacity: 0.85
+  anchors.verticalCenter: parent.verticalCenter
+  anchors.horizontalCenter: parent.horizontalCenter
+  size: 240 80
+
+  ComboBox
+    size: 220 20
+    id: travelOptions
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.top: parent.top
+    text-align: center
+    opacity: 1.0
+    color: yellow
+    font: sans-bold-16px
+    margin-top: 25
+    
+  Button
+    id: closeButton
+    text: X
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    color: #99d6ff
+    size: 15 15
+    margin-bottom: 10
+    margin-right: 10
+]], g_ui.getRootWidget())
+
+TravelWindow:hide()
+
+NPC.talk = function(text)
+  if (g_game.getClientVersion() >= 810) then
+      NPC.say(text)
+  else
+    return say(text)
+  end
+end
+
+local setOptions = function(npc)
+  TravelWindow.travelOptions:clear()
+  local npcName = npc:getName()
+  local cities = NPCsAndCities[npcName]
+  TravelWindow.travelOptions:addOption(npcName)
+  for _, city in ipairs(cities:split(",")) do
+    TravelWindow.travelOptions:addOption(city:trim())
+  end
+end
+
+local setup = function(npc)    
+  setOptions(npc)
+  TravelWindow:show()
+end
+
+local reset = function()
+  TravelWindow:hide()
+  TravelWindow.travelOptions:clear()
+  modules.game_interface.getRootPanel():focus()
+end
+
+TravelWindow.travelOptions.onOptionChange = function(widget, option, data)
+  if TravelWindow:isVisible() then         
+    say("hi")
+    schedule(500, function()
+      NPC.talk(option)
+    end)
+    schedule(1000, function()
+      NPC.talk("yes")
+    end)
+    reset()
+  end
+end
+
+local getTravelNPC = function()
+  for name,_ in pairs(NPCsAndCities) do
+    local npc = getCreatureByName(name)
+    if npc and distanceFromPlayer(npc:getPosition()) <= 2 then
+      return npc
+    end
+  end
+end
+
+onPlayerPositionChange(function(old, new)
+  local npc = getTravelNPC()
+  if npc and not TravelWindow:isVisible() then
+    setup(npc)
+  elseif not npc and TravelWindow:isVisible() then
+    reset()
+  end
+end)
+
+local panel = g_ui.getRootWidget():recursiveGetChildById('gameMapPanel')
+macro(100, function()
+    for i, child in ipairs(panel:getChildren()) do
+        if child:getStyleName() == "BotIcon" then
+            if child.text:getColor().r == 255 then
+                child.text:setColor("white")
+                child.text:setFont("verdana-11px-rounded") 
+            end
+        end
+    end
+end)
+--
+tabs:setHeight(math.ceil(#tabs.tabs / 5)* 20)
+ for k,tab in ipairs(tabs.tabs) do
+    if math.fmod(k, 6) == 0 then
+        tab:mergeStyle({ ['$!first'] = { }})
+        tab:addAnchor(modules.corelib.AnchorTop, "prev", modules.corelib.AnchorBottom)
+        tab:addAnchor(modules.corelib.AnchorLeft, "parent", modules.corelib.AnchorLeft)
+    elseif k > 6 then
+        tab:mergeStyle({ ['$!first'] = { }})
+        tab:addAnchor(modules.corelib.AnchorTop, "prev", modules.corelib.AnchorTop)
+        tab:addAnchor(modules.corelib.AnchorLeft, "prev", modules.corelib.AnchorRight)
+    end   
+ end
+
+local config = {
+    { name = "ICON NAME", hk = "F1" },
+    { name = "ICON NAME2", hk = "F2" },
+    { name = "ICON NAME3", hk = "F3" },
+ }
+ 
+ schedule(1000, function()
+   for i, child in ipairs(modules.game_interface.gameMapPanel:getChildren()) do
+     if child:getStyleName() == "BotIcon" then
+         for _, info in ipairs(config) do
+           if info.name:lower() == child.text:getText():lower() then
+             child.hotkey:setText(info.hk)
+             child.hotkey:show()
+             hotkey(info.hk, "", function() child:onClick() end)
+           end
+         end
+     end
+   end
+ end)

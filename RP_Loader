@@ -2206,7 +2206,6 @@ local Avva = macro(200, "Avalanche", function()
         delay(200)
     end
 end)
-Avva = addIcon("uEVVAa", {item= 3161, text="AVVAA"}, Avva)
  
 macro(200, "FireBall Bomb", function()
     if g_game.isAttacking() then

@@ -2186,49 +2186,51 @@ UI.Button("Zoom In map [ctrl + =]", function() zoomIn() end)
 UI.Button("Zoom Out map [ctrl + -]", function() zoomOut() end)
 
 setDefaultTab("Macro")
-
-Pally_PvP = macro(500, "CON - GRAN CON", function()
-  if g_game.isAttacking() then
-   say("exori gran con", 700)   
-   delay(1000)
-   say("exori con", 1000)   
-  end
+Sd_Pvp= macro(400, "Sd on Target", function()
+    if g_game.isAttacking() then
+        g_game.useInventoryItemWith(3155, g_game.getAttackingCreature())
+        delay(400)
+    end
 end)
-Pally_PvP = addIcon("test", {item =25759, text = "Gran / Con"}, Pally_PvP)
+marrom = addIcon("(Sd) Pvp", {item=36666, text="SD"},
+function(icon, isOn)
+Sd_Pvp.setOn(isOn)
+end)
 
 local PvPx = addIcon("onetwo", {item =37337, text = "PVP"}, function(icon, isOn)
     return g_game.setSafeFight(not isOn) 
 end)
+
 UI.Separator()
-local Ava = macro(200, "Avalanche", function()
+local Ava = macro(460, "Avalanche", function()
     if g_game.isAttacking() then
         usewith(3161, g_game.getAttackingCreature())
         delay(200)
     end
 end)
  
-macro(200, "FireBall Bomb", function()
+macro(500, "FireBall Bomb", function()
     if g_game.isAttacking() then
         usewith(3191, g_game.getAttackingCreature())
         delay(200)
     end
 end)
  
-macro(200, "Explosion", function()
+macro(500, "Explosion", function()
     if g_game.isAttacking() then
         usewith(3200, g_game.getAttackingCreature())
         delay(200)
     end
 end)
  
-macro(200, "Thunderstorm", function()
+macro(500, "Thunderstorm", function()
     if g_game.isAttacking() then
         usewith(3202, g_game.getAttackingCreature())
         delay(200)
     end
 end)
  
-macro(200, "Stone Shower", function()
+macro(500, "Stone Shower", function()
     if g_game.isAttacking() then
         usewith(3175, g_game.getAttackingCreature())
         delay(200)

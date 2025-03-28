@@ -1,4 +1,4 @@
--- load all otui files, order doesn't matter
+---- load all otui files, order doesn't matter
 local configName = modules.game_bot.contentsPanel.config:getCurrentOption().text
 
 local configFiles = g_resources.listDirectoryFiles("/bot/" .. configName .. "/vBot", true, false)

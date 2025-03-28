@@ -2187,14 +2187,132 @@ UI.Button("Zoom Out map [ctrl + -]", function() zoomOut() end)
 
 setDefaultTab("Macro")
 
-Pally_PvP = macro(500, "CON - GRAN CON", function()
-  if g_game.isAttacking() then
-   say("exori gran con", 700)   
-   delay(1000)
-   say("exori con", 1000)   
-  end
+local distance = 8
+Exoris = macro(200, "ATK - ANTIRED",  function()
+    local playerInScreen = false
+    if not g_game.isAttacking() then
+        return
+    end
+    for i,mob in ipairs(getSpectators()) do
+        if (getDistanceBetween(player:getPosition(), mob:getPosition())  <= distance and mob:isPlayer())  and (player:getName() ~= mob:getName()) then
+            playerInScreen = true
+        end
+    end
+ 
+    if not playerInScreen then 
+      say("exori gran")
+      delay(900)
+      say("exori")
+      delay(900)
+      end
+    if g_game.isAttacking() then
+       saySpell('Exori hur', 2000)
+        delay(940)
+       saySpell('Exori Ico', 1700)
+ end
 end)
-Pally_PvP = addIcon("test", {item =25759, text = "Gran / Con"}, Pally_PvP)
+
+antiGamerz = macro(100, "ANTI - PLAYERS", function()
+    if getPlayers(detectRange) ~= 0 then
+        TargetBot.delay(time)
+        return
+    end
+end)
+
+UI.Separator()
+
+local Spells = {
+{name = "utito tempo", cast = true, range = 1, buffSpell = true, manaCost = 290, level = 20},
+}
+ 
+-- script
+ 
+utito = macro(485, "UTITO TEMPO", function()
+ 
+if not g_game.isAttacking() then
+return
+end
+local target = g_game.getAttackingCreature()
+local distance = getDistanceBetween(player:getPosition(), target:getPosition())
+for _, spell in ipairs(Spells) do
+if mana() >= spell.manaCost and lvl() >= spell.level and distance <= spell.range and spell.cast then
+if not hasPartyBuff() or not spell.buffSpell then
+say(spell.name)
+end
+end
+end
+end)
+
+UI.Separator()
+
+local Spells = {
+{name = "utamo tempo", cast = true, range = 1, buffSpell = true, manaCost = 200, level = 20},
+}
+ 
+-- script
+ 
+utito = macro(440, "UTAMO TEMPO", function()
+ 
+if not g_game.isAttacking() then
+return
+end
+local target = g_game.getAttackingCreature()
+local distance = getDistanceBetween(player:getPosition(), target:getPosition())
+for _, spell in ipairs(Spells) do
+if mana() >= spell.manaCost and lvl() >= spell.level and distance <= spell.range and spell.cast then
+if not hasPartyBuff() or not spell.buffSpell then
+say(spell.name)
+end
+end
+end
+end)
+
+UI.Separator()
+
+local Spells = {
+{name = "", cast = true, range = 2, buffSpell = true, manaCost = 20, level = 20},
+{name = "exeta res", cast = true, range = 1, manaCost = 20, level = 28},
+}
+ 
+-- script
+ 
+macro(450, "EXETA RES", function()
+if not g_game.isAttacking() then
+return
+end
+local target = g_game.getAttackingCreature()
+local distance = getDistanceBetween(player:getPosition(), target:getPosition())
+for _, spell in ipairs(Spells) do
+if mana() >= spell.manaCost and lvl() >= spell.level and distance <= spell.range and spell.cast then
+if not hasPartyBuff() or not spell.buffSpell then
+say(spell.name)
+end
+end
+end
+end)
+
+UI.Separator()
+
+local Spells = {
+{name = "exeta amp res", cast = true, range = 10, manaCost = 80, level = 28},
+}
+ 
+-- script
+ 
+macro(500, "EXETA AMP RES", function()
+if not g_game.isAttacking() then
+return
+end
+local target = g_game.getAttackingCreature()
+local distance = getDistanceBetween(player:getPosition(), target:getPosition())
+for _, spell in ipairs(Spells) do
+if mana() >= spell.manaCost and lvl() >= spell.level and distance <= spell.range and spell.cast then
+if not hasPartyBuff() or not spell.buffSpell then
+say(spell.name)
+end
+end
+end
+end)
 
 local PvPx = addIcon("onetwo", {item =37337, text = "PVP"}, function(icon, isOn)
     return g_game.setSafeFight(not isOn) 

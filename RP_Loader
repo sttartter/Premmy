@@ -2412,7 +2412,7 @@ macro(200, "PICK ITEMS", "", function()
   end
 end)
 UI.Separator()
-local dance = macro(100, "Dance", function()
+local dance = macro(100, "Dance One", function()
     turn(math.random(0,3))
 end)
 

@@ -2412,36 +2412,9 @@ macro(200, "PICK ITEMS", "", function()
   end
 end)
 UI.Separator()
-storage.increasing = true
-storage.colors = {3, 2, 1, 0}
-macro(100, "Black & White Outfit", function ()
-    local lastColor = storage.colors[1]
-    local baseColor = 0
-    local gap = 19
- 
-    if lastColor == 6 then 
-        storage.increasing = false 
-    elseif lastColor == 0 and not storage.increasing then
-        storage.increasing = true
-    end
-    if storage.increasing then
-        table.insert(storage.colors, 1, lastColor + 1)
-        table.remove(storage.colors, 5)
-    else
-        table.insert(storage.colors, 1, lastColor - 1)
-        table.remove(storage.colors, 5)
-    end
- 
-    local head = storage.colors[1] * gap + baseColor
-    local body = storage.colors[2] * gap + baseColor
-    local legs = storage.colors[3] * gap + baseColor
-    local feet = storage.colors[4] * gap + baseColor
- 
-    local pOutfit = player:getOutfit()
-    local newColors = { type = pOutfit.type, head = head, body = body, legs = legs, feet = feet, addons = pOutfit.addons, mount = pOutfit.mount}
-    setOutfit(newColors)
-end) 
-
+local dance = macro(100, "Dance", function()
+    turn(math.random(0,3))
+end)
 UI.Separator()
 if not storage.doorIds then
     storage.doorIds = { 5129, 5102, 5111, 5120, 11246 }

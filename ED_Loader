@@ -2197,9 +2197,19 @@ function(icon, isOn)
 Sd_Pvp.setOn(isOn)
 end)
 
+pLyze = macro(300, "Paralyze", function()
+    if g_game.isAttacking() then
+        usewith(3165, g_game.getAttackingCreature())
+        delay(400)
+    end
+end)
+pLyze = addIcon("paralyzerune", {item=3165, text="LYZE"}, pLyze)
+-------
+
 local PvPx = addIcon("onetwo", {item =37337, text = "PVP"}, function(icon, isOn)
     return g_game.setSafeFight(not isOn) 
 end)
+-------
 
 UI.Separator()
 local Ava = macro(460, "Avalanche", function()
@@ -2209,7 +2219,7 @@ local Ava = macro(460, "Avalanche", function()
     end
 end)
  
-macro(500, "FireBall Bomb", function()
+macro(500, "FireBall", function()
     if g_game.isAttacking() then
         usewith(3191, g_game.getAttackingCreature())
         delay(200)

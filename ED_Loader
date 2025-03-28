@@ -2206,6 +2206,52 @@ end)
 pLyze = addIcon("paralyzerune", {item=3165, text="LYZE"}, pLyze)
 -------
 
+macro(400, "Exevo Gran Mas Frigo", function()
+  if g_game.isAttacking() then
+    say("exevo gran mas frigo")
+    say("exevo gran mas frigo")
+    say("exevo gran mas frigo")
+  end
+end)
+
+macro(500, "Exevo Gran Mas TERA", function()
+    if g_game.isAttacking() then
+        say("exevo gran mas TERA")
+        say("exevo gran mas TERA")
+        say("exevo gran mas TERA")
+    end
+end)
+macro(400, "Exevo Tera Hur", function()
+    if g_game.isAttacking() then
+        say("exevo tera hur")
+        say("exevo tera hur")
+        say("exevo tera hur")
+    end
+end)
+macro(400, "Exevo Frigo Hur", function()
+    if g_game.isAttacking() then
+        say("exevo frigo hur")
+         say("exevo frigo hur")
+         say("exevo frigo hur")
+    end
+end)
+macro(500, "Exori max tera", function()
+    if g_game.isAttacking() then
+        say("exori max tera")
+        say("exori max tera")
+        say("exori max tera")
+    end
+end)
+
+macro(500, "Exori max frigo", function()
+    if g_game.isAttacking() then
+        say("exori max frigo")
+        say("exori max frigo")
+        say("exori max frigo")
+    end
+end)
+-------
+
 local PvPx = addIcon("onetwo", {item =37337, text = "PVP"}, function(icon, isOn)
     return g_game.setSafeFight(not isOn) 
 end)

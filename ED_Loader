@@ -54,8 +54,6 @@ UI.Separator()
 UI.Label("Private Scripts:")
 UI.Separator()
 
-setDefaultTab("Main")
-
 local amulet = 3081
 local SsaMightFull = macro(170, "SSA FULL", function()
     if getNeck() == nil or getNeck():getId() ~= amulet then
@@ -113,11 +111,11 @@ function removeItem(equipped)
   end
 end
 
-eRing = addIcon("energyR", {item =32621, text = "E-RING"}, eRing )
+eRing = addIcon("energyR", {item =32621, text = "E-RING"}, eRing)
 
 ------
 
-
+setDefaultTab("Main")
 
 --[[
   1. Start the script with your normal ring on 

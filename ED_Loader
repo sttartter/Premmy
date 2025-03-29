@@ -1511,41 +1511,6 @@ macro(800, function()
   end
 end, PVPTab)
 UI.Separator()
-local Off = addIcon("offall", {item =23451, switchable = false, text = "OFF"}, function(icon, isOn)
-TargetBot.setOff()
-AttackBot.setOff()
-CaveBot.setOff()
-end)
-
-storage.WGPoses = storage.WGPoses or { }
-macro(50, "Force Hold WG", function()
-  for _, candidate in ipairs(storage.WGPoses) do
-    local wgTile = g_map.getTile(candidate)
-    if wgTile and wgTile:canShoot() then
-      if wgTile:getTopUseThing():getId() ~= 2130 then
-        wgTile:setText("Force WG")
-        useWith(3156, wgTile:getGround())
-      end
-    end
-  end
-end)
-
-addButton("","Set WG Pos", function()
-  table.insert(storage.WGPoses, pos())
-end)
-
-addButton("","Clean All Positions", function()
-  for _, candidate in ipairs(storage.WGPoses) do
-    local wgTile = g_map.getTile(candidate)
-    if wgTile then
-      wgTile:setText("")
-    end
-  end
-  storage.WGPoses = { }
-end)
-UI.Separator()
-
-UI.Separator()
 
 local toggle = macro(10, "Mwall Step", "F11",function() end) -- taca mw no sqm anterior
 

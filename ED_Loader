@@ -54,6 +54,58 @@ UI.Separator()
 UI.Label("Private Scripts:")
 UI.Separator()
 
+local ssaFull = macro(170, "SSA FULL", function()
+if getNeck() == nil then
+  g_game.equipItemId(3081)
+end
+end)
+ssaFull = addIcon("saFule", {item =32621, text = "SSA FULL"}, ssaFull )
+
+local mightFull = macro(170, "MIGHT FULL", function()
+if getFinger() == nil then
+  g_game.equipItemId(3048)
+end
+end)
+mightFull = addIcon("mrFule", {item =32621, text = "MIGHT FULL"}, mightFull )
+
+local item = {eq = 3088, bp = 3051} -- id equipado e id na bp (se for o mesmo id, repetir)
+local hp = {min = 80, max = 99} -- equipa no minimo, tira no max
+local slot = SlotFinger
+local oldVersions = false -- false: servidores que pode equipar item por hotkey
+eRing = macro(500, "ENERGY RING - 80%", function()
+  local life = hppercent()
+  if life <= hp.min then
+    -- equipar
+    equipItem(getSlot(slot))
+  elseif life >= hp.max then
+    removeItem(getSlot(slot))
+  end
+end)
+
+function equipItem(equipped)
+  if not equipped or equipped:getId() ~= item.eq then
+    if oldVersions then
+      local find = findItem(item.bp)
+      if find then
+        moveToSlot(find,SlotFinger,1)
+      end
+    else
+      g_game.equipItemId(item.bp)
+    end
+  end
+end
+
+function removeItem(equipped)
+  if equipped and equipped:getId() == item.eq then
+    if oldVersions then
+      moveToSlot(equipped,SlotBack,1)
+    else
+      g_game.equipItemId(item.eq)
+    end
+  end
+end
+
+eRing = addIcon("energyR", {item =32621, text = "E-RING"}, eRing )
 ------
 
 setDefaultTab("Main")

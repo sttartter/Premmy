@@ -56,6 +56,30 @@ UI.Separator()
 
 setDefaultTab("Main")
 
+local amulet = 3081
+
+local SsaMightFull = macro(170, "SSA FULL", function()
+    if getNeck() == nil or getNeck():getId() ~= amulet then
+        g_game.equipItemId(amulet)
+        delay(30)
+    end
+end)
+
+local SsaFull = addIcon("SsaFul", {item = 3081, text = "SSA FULL"}, SsaFull)
+
+
+local might = 3048
+
+local MightFull = macro(185, "MIGHT FULL", function()
+    if getFinger() == nil or getFinger():getId() ~= might then
+        g_game.equipItemId(might)
+        delay(30)
+    end
+end)
+
+local MightFull = addIcon("MightFul", {item = 3048, text = "SSA-MIG"}, MightFull)
+
+
 local item = {eq = 3088, bp = 3051} -- id equipado e id na bp (se for o mesmo id, repetir)
 local hp = {min = 80, max = 99} -- equipa no minimo, tira no max
 local slot = SlotFinger

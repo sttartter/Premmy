@@ -2226,7 +2226,7 @@ end
 
 setDefaultTab("COMB")
 UI.Separator()
-UI.Label("AUTO FOLLOW"):setColor("darkPink")
+UI.Label("AUTO FOLLOW"):setColor("pink")
 UI.Separator()
 storage.followLeader = storage.followLeader or "Quentin"
 FollowMacro = macro(1231321321, "Follow: ExaniTera", function() end)
@@ -2301,7 +2301,7 @@ onCreaturePositionChange(function(creature, newPos, oldPos)
 end)
 
 UI.Separator()
-UI.Label("ATACAR TARGET LEADER"):setColor("darkPink")
+UI.Label("ATACAR TARGET LEADER"):setColor("pink")
 UI.Separator()
 
 PvpAttackLeader = {}
@@ -2352,7 +2352,7 @@ PvpAttackLeader.setEnabled = (function(enabled)
 end)
  
 UI.Separator()
-UI.Label("COMBO SPELL"):setColor("darkPink")
+UI.Label("COMBO SPELL"):setColor("pink")
 UI.Separator()
 local comboOptions = {
   leader = storage.gpSpellComboLeader or "",
@@ -2390,7 +2390,7 @@ onTalk(function(name, level, mode, text, channelId, pos)
   end
 end)
 UI.Separator()
-UI.Label("COMBO SD"):setColor("darkPink")
+UI.Label("COMBO SD"):setColor("pink")
 UI.Separator()
 
 if not storage.ComboUni then

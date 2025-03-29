@@ -56,6 +56,49 @@ UI.Separator()
 
 setDefaultTab("Main")
 
+local item = {eq = 3088, bp = 3051} -- id equipado e id na bp (se for o mesmo id, repetir)
+local hp = {min = 80, max = 99} -- equipa no minimo, tira no max
+local slot = SlotFinger
+local oldVersions = false -- false: servidores que pode equipar item por hotkey
+eRing = macro(500, "ENERGY RING - 80%", function()
+  local life = hppercent()
+  if life <= hp.min then
+    -- equipar
+    equipItem(getSlot(slot))
+  elseif life >= hp.max then
+    removeItem(getSlot(slot))
+  end
+end)
+
+function equipItem(equipped)
+  if not equipped or equipped:getId() ~= item.eq then
+    if oldVersions then
+      local find = findItem(item.bp)
+      if find then
+        moveToSlot(find,SlotFinger,1)
+      end
+    else
+      g_game.equipItemId(item.bp)
+    end
+  end
+end
+
+function removeItem(equipped)
+  if equipped and equipped:getId() == item.eq then
+    if oldVersions then
+      moveToSlot(equipped,SlotBack,1)
+    else
+      g_game.equipItemId(item.eq)
+    end
+  end
+end
+
+eRing = addIcon("energyR", {item =32621, text = "E-RING"}, eRing )
+
+------
+
+
+
 --[[
   1. Start the script with your normal ring on 
   2. make sure the backpack with e-rings
@@ -389,6 +432,130 @@ if g_game.getClientVersion() >= 1000 then
     theinmortal()
     
 end
+----------
+local s  = {}
+
+g_ui.loadUIFromString([[
+PvPScriptsScrollBar < Panel
+  height: 28
+  margin-top: 3
+
+  UIWidget
+    id: text
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: parent.top
+    text-align: center
+    
+  HorizontalScrollBar
+    id: scroll
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    margin-top: 3
+    minimum: 0
+    maximum: 10
+    step: 1
+
+PvPScriptsItem < Panel
+  height: 40
+  margin-top: 10  
+  UIWidget
+    id: text
+    anchors.left: parent.left
+    anchors.verticalCenter: next.verticalCenter
+
+  BotItem
+    id: item
+    anchors.top: parent.top
+    anchors.right: parent.right
+    
+]])
+
+local addScrollBar = function(id, title, min, max, defaultValue, dest, tooltip)
+    local widget = UI.createWidget("PvPScriptsScrollBar", dest)
+    widget.text:setTooltip(tooltip)
+    widget.scroll.onValueChange = function(scroll, value)
+      widget.text:setText(title..value)
+      if value == 0 then
+        value = 1
+      end
+      storage[id] = value
+    end
+    widget.scroll:setRange(min, max)
+    widget.scroll:setTooltip(tooltip)
+    widget.scroll:setValue(storage[id] or defaultValue)
+    widget.scroll.onValueChange(widget.scroll, widget.scroll:getValue())
+end
+
+local addItem = function(id, title, defaultItem, dest, tooltip)
+    local widget = UI.createWidget('PvPScriptsItem', dest)
+    widget:setId(id)
+    widget.text:setText(title)
+    widget.text:setTooltip(tooltip)
+    widget.item:setTooltip(tooltip)
+    widget.item:setItemId(storage[id] or defaultItem)
+    widget.item.onItemChange = function(widget)
+      storage[id] = widget:getItemId()
+    end
+    storage[id] = storage[id] or defaultItem
+    return widget
+end
+
+addSeparator()
+addLabel("","E-Ring Custom"):setColor("green")
+addSeparator()
+addLabel()
+
+addLabel("", "E-Ring"):setColor("#5DF2BD")
+addScrollBar("ERingHP", "HP < ", 0, 100, 90, nil, "")
+addScrollBar("ERingMP", "MP > ", 0, 100, 80, nil, "")
+addItem("ERing", "normal id", storage.ERing or 3051, nil, "")
+addItem("ERingEquipped", "equipped Id", storage.ERingEquipped or 3088, nil, "")
+
+addLabel("", "Normal Ring"):setColor("yellow")
+addScrollBar("NormalHP", "HP > ", 0, 100, 90, nil, "")
+addScrollBar("NormalMP", "MP < ", 0, 100, 80, nil, "")
+addItem("NormalRing", "normal id", storage.NormalRing or 3004, nil, "")
+addItem("NormalRingEquipped", "equipped id", storage.NormalRingEquipped or 3004, nil, "")
+
+s.equipItem = function(normalId, activeId, slot)
+    local item = getInventoryItem(slot)
+    if item and item:getId() == activeId then
+        return false
+    end
+  
+    if g_game.getClientVersion() >= 870 then
+      g_game.equipItemId(normalId)
+      return true
+    end
+  
+    local itemToEquip = findItem(normalId)
+    if itemToEquip then
+        moveToSlot(itemToEquip, slot, itemToEquip:getCount())
+        return true
+    end
+end
+
+function crazyHPPercent()
+  return (player:getHealth() / 100) * 10
+end
+
+s.m_main = macro(200, "E-Ring", function() 
+  local hp = hppercent()
+  local mp = manapercent()
+   
+
+  local equipEnergy = hp < storage.ERingHP and mp > storage.ERingMP
+  local equipNormal = hp > storage.NormalHP and mp <= storage.NormalMP
+
+  if equipEnergy then
+      s.equipItem(storage.ERing, storage.ERingEquipped, SlotFinger)
+  elseif equipNormal then
+      s.equipItem(storage.NormalRing, storage.NormalRingEquipped, SlotFinger)
+  end
+end)
+----------
 
 local cIcon = addIcon("cI",{text="Cave\nBot",switchable=false,moveable=true}, function()
   if CaveBot.isOff() then 

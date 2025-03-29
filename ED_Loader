@@ -59,14 +59,14 @@ if getNeck() == nil then
   g_game.equipItemId(3081)
 end
 end)
-ssaFull = addIcon("saFule", {item =32621, text = "SSA FULL"}, ssaFull )
+ssaFull = addIcon("saFule", {item =3081, text = "SSA FULL"}, ssaFull )
 
 local mightFull = macro(170, "MIGHT FULL", function()
 if getFinger() == nil then
   g_game.equipItemId(3048)
 end
 end)
-mightFull = addIcon("mrFule", {item =32621, text = "MIGHT FULL"}, mightFull )
+mightFull = addIcon("mrFule", {item =3048, text = "MIGHT FULL"}, mightFull )
 
 local item = {eq = 3088, bp = 3051} -- id equipado e id na bp (se for o mesmo id, repetir)
 local hp = {min = 80, max = 99} -- equipa no minimo, tira no max
@@ -105,7 +105,7 @@ function removeItem(equipped)
   end
 end
 
-eRing = addIcon("energyR", {item =32621, text = "E-RING"}, eRing )
+eRing = addIcon("energyR", {item =3088, text = "E-RING"}, eRing )
 ------
 
 setDefaultTab("Main")

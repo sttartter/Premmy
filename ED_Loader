@@ -2408,7 +2408,7 @@ local toAttack = nil
 local comboSD = macro(200, function() end)
 
 local PvpAttackLeader = {}
-PvpAttackLeader.Macro = macro(50, "Lider De Target", function()
+PvpAttackLeader.Macro = macro(50, "LIDER COMBO SD", function()
     if toAttack and settings.LeaderName and toAttack ~= g_game.getAttackingCreature() then
         g_game.attack(toAttack)
         toAttack = nil

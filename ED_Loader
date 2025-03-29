@@ -2370,7 +2370,7 @@ Sd_Pvp= macro(400, "Sd on Target", function()
         delay(400)
     end
 end)
-marrom = addIcon("(Sd) Pvp", {item=36666, text="SD"},
+marrom = addIcon("(Sd) Pvp", {item=3155, text="SD"},
 function(icon, isOn)
 Sd_Pvp.setOn(isOn)
 end)

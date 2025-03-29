@@ -2531,10 +2531,6 @@ local m_configRune = macro(10000, "Config Rune", function() end, leftPanel)
 
 addLabel("","to configure the rune combo, enable the 'Config Rune' macro, and ask the leader to use the rune in any target, DO NOT ATTACK, only rune :)", leftPanel)
 
-addButton("", "+ Free Scripts", function()
-  g_platform.openUrl("https://discord.gg/RkQ9nyPMBH")
-end, leftPanel)
-
 --inspired by vbot 4.8 combo
 onMissle(function(missle)
   if not settings.enabled then return end

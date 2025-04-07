@@ -1439,7 +1439,7 @@ Panel
   end
 
 
-macro(175, function() 
+local antimovegold = macro(175, function() 
     if storage[panelName].enabled then
         local blockItem = findItem(storage[panelName].id)
         for _, tile in pairs(g_map.getTiles(posz())) do

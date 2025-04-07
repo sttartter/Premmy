@@ -1222,6 +1222,25 @@ macro(800, function()
   end
 end, PVPTab)
 
+local dropItems = { 3492 }
+local maxStackedItems = 8
+local dropDelay = 10
+
+gpAntiPushDrop = macro(dropDelay , "Antipush - WORMS", "Numpad0", function ()
+    local tile = g_map.getTile(pos())
+    if tile and tile:getThingCount() < maxStackedItems then
+        local thing = tile:getTopUseThing()
+        for i, item in pairs(dropItems) do
+            if item ~= thing:getId() then
+                local dropItem = findItem(item)
+                if dropItem then
+                    g_game.move(dropItem, pos(), 1)
+                end
+            end
+        end
+    end
+end)
+
 -- Establece la pestaÃ±a por defecto en "spells"
 setDefaultTab("PVP")
 

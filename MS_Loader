@@ -1088,7 +1088,7 @@ UI.Separator()
 setDefaultTab("pvp")
 
 -- Crea una etiqueta de UI con el texto 
-local name = UI.Label("ANTIPUSH - I")
+local name = UI.Label("ANTIPUSH")
 
 -- Define una macro que se ejecuta cada 800 milisegundos
 macro(800, function()
@@ -1200,29 +1200,6 @@ trashie.setOn(isOn)
 end)
 
 ---
--- Establece la pestaÃ±a por defecto en "spells"
-setDefaultTab("PVP")
-
--- Crea una etiqueta de UI con el texto 
-local name = UI.Label("ANTIPUSH - II")
-
--- Define una macro que se ejecuta cada 800 milisegundos
-macro(800, function()
-  local rainbowDelay = 0 -- Inicializa el retraso del arco iris
-
-  -- Itera sobre una lista de colores
-  for k, color in ipairs({"#00bfff", "#0099cc"}) do
-    -- Programa una funciÃ³n que cambia el color de la etiqueta despuÃ©s de un retraso
-    schedule(rainbowDelay, function()
-      name:setColor(color) -- Establece el color de la etiqueta
-    end)
-
-    -- Incrementa el retraso para el prÃ³ximo color
-    rainbowDelay = rainbowDelay + 300 -- Tiempo entre colores
-  end
-end, PVPTab)
-UI.Separator()
-
 
 
 -- Establece la pestaÃ±a por defecto en "spells"
@@ -1298,7 +1275,7 @@ UI.Separator()
 setDefaultTab("PVP")
 
 -- Crea una etiqueta de UI con el texto 
-local name = UI.Label("ANTIPUSH - III")
+local name = UI.Label("ITEM")
 
 -- Define una macro que se ejecuta cada 800 milisegundos
 macro(800, function()

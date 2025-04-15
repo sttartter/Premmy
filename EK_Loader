@@ -2032,17 +2032,7 @@ Exoris = macro(200, "ATK - ANTIRED",  function()
  end
 end)
 
-antiGamerz = macro(100, "ANTI - PLAYERS", function()
-    if getPlayers(detectRange) ~= 0 then
-        -- Si hay un jugador cerca, detiene el ataque
-        TargetBot.setOff()
-        delay(time)  -- Espera un tiempo (¿segundos? ¿milisegundos?)
-        TargetBot.setOn()  -- Vuelve a activar el ataque
-    else
-        -- Si no hay jugadores, sigue atacando normalmente
-        TargetBot.setOn()
-    end
-end)
+
 
 UI.Separator()
 
@@ -2063,7 +2053,7 @@ for _, spell in ipairs(Spells) do
 if mana() >= spell.manaCost and lvl() >= spell.level and distance <= spell.range and spell.cast then
 if not hasPartyBuff() or not spell.buffSpell then
 say(spell.name)
-end
+nd
 end
 end
 end)

@@ -2061,7 +2061,7 @@ for _, spell in ipairs(Spells) do
 if mana() >= spell.manaCost and lvl() >= spell.level and distance <= spell.range and spell.cast then
 if not hasPartyBuff() or not spell.buffSpell then
 say(spell.name)
-nd
+end
 end
 end
 end)

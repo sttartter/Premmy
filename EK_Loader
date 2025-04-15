@@ -2034,8 +2034,13 @@ end)
 
 antiGamerz = macro(100, "ANTI - PLAYERS", function()
     if getPlayers(detectRange) ~= 0 then
-        TargetBot.delay(time)
-        return
+        -- Si hay un jugador cerca, detiene el ataque
+        TargetBot.setOff()
+        delay(time)  -- Espera un tiempo (¿segundos? ¿milisegundos?)
+        TargetBot.setOn()  -- Vuelve a activar el ataque
+    else
+        -- Si no hay jugadores, sigue atacando normalmente
+        TargetBot.setOn()
     end
 end)
 

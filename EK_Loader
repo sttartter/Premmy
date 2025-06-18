@@ -2088,7 +2088,7 @@ local uTempo = macro(500, "UTAMO TEMPO", function()
 saySpell("utamo tempo", 300)
 delay(8000)
 end)
-local uTempo = addIcon("uTTemp", {item = 22889, text = "SSA FULL"}, uTempo)
+local uTempo = addIcon("uTTemp", {item = 22889, text = "Utamo\nTempo"}, uTempo)
 UI.Separator()
 
 local Spells = {

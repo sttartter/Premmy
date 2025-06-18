@@ -54,6 +54,21 @@ UI.Separator()
 UI.Label("Private Scripts:")
 UI.Separator()
 
+
+local SsaMight = macro(150, "SSA & MIGHT FULL", function()
+local amulet = 3081
+local might = 3048
+if getNeck() == nill or getNeck():getId() ~= amulet then
+g_game.equipItemId(amulet)
+delay(30)
+end
+if getFinger() == nill or getFinger():getId() ~= might then
+g_game.equipItemId(might)
+delay(30)
+end
+end)
+local SsaMight = addIcon("SsaMight", {item =14521, text = "SSA\nMIGHT",  }, SsaMight )
+
 setDefaultTab("Main")
 
 --[[

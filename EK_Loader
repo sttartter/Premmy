@@ -2083,28 +2083,12 @@ end)
 
 UI.Separator()
 
-local Spells = {
-{name = "utamo tempo", cast = true, range = 1, buffSpell = true, manaCost = 200, level = 20},
-}
- 
--- script
- 
-utito = macro(440, "UTAMO TEMPO", function()
- 
-if not g_game.isAttacking() then
-return
-end
-local target = g_game.getAttackingCreature()
-local distance = getDistanceBetween(player:getPosition(), target:getPosition())
-for _, spell in ipairs(Spells) do
-if mana() >= spell.manaCost and lvl() >= spell.level and distance <= spell.range and spell.cast then
-if not hasPartyBuff() or not spell.buffSpell then
-say(spell.name)
-end
-end
-end
-end)
 
+local uTempo = macro(500, "UTAMO TEMPO", function()
+saySpell("utamo tempo", 300)
+delay(8000)
+end)
+local uTempo = addIcon("uTTemp", {item = 22889, text = "SSA FULL"}, uTempo)
 UI.Separator()
 
 local Spells = {

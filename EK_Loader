@@ -2059,27 +2059,12 @@ end)
 
 UI.Separator()
 
-local Spells = {
-{name = "utito tempo", cast = true, range = 1, buffSpell = true, manaCost = 290, level = 20},
-}
- 
--- script
- 
-utito = macro(485, "UTITO TEMPO", function()
- 
-if not g_game.isAttacking() then
-return
-end
-local target = g_game.getAttackingCreature()
-local distance = getDistanceBetween(player:getPosition(), target:getPosition())
-for _, spell in ipairs(Spells) do
-if mana() >= spell.manaCost and lvl() >= spell.level and distance <= spell.range and spell.cast then
-if not hasPartyBuff() or not spell.buffSpell then
-say(spell.name)
-end
-end
-end
+macro(400, "UTITO TEMPO", function()
+  if g_game.isAttacking() and not hasPartyBuff() then
+    say("utito tempo")
+  end
 end)
+
 
 UI.Separator()
 

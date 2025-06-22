@@ -1689,7 +1689,7 @@ end)
 
 onKeyPress(function(keys)
     if not modules.corelib.g_app.isMobile() and modules.game_console:isChatEnabled() then
-        modules.game_textmessage.displayGameMessage('Desactive o chat para usar el Script de exiva/sense con las teclas.')
+        modules.game_textmessage.displayGameMessage('Off Chat.')
         return
     end
 
@@ -1700,13 +1700,13 @@ onKeyPress(function(keys)
             say(config.Spell .. ' "' .. Player .. '"')
             config.LastSensedPlayer = Player
         else
-            modules.game_textmessage.displayGameMessage("No hay ningun ultimo Target almacenado.")
+            modules.game_textmessage.displayGameMessage("No Target")
         end
     elseif keys == config.LastSenseKey:lower() then
         if config.LastSensedPlayer and type(config.LastSensedPlayer) == "string" then
             say(config.Spell .. ' "' .. config.LastSensedPlayer .. '"')
         else
-            modules.game_textmessage.displayGameMessage("No hay ningun ultimo Sense/Exiva almacenado.")
+            modules.game_textmessage.displayGameMessage("No last Target.")
         end
     end
 end)
